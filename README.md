@@ -1,5 +1,7 @@
 # TINYCADE - 复古小游戏合集
 
+[![GitHub](https://img.shields.io/badge/GitHub-ZRRRY%2FTinyCade-181717?logo=github&logoColor=white)](https://github.com/ZRRRY/TinyCade) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Version](https://img.shields.io/badge/version-1.4.0-7CB9E8)](https://github.com/ZRRRY/TinyCade) [![Tests](https://img.shields.io/badge/tests-201%2F201-4caf50)](https://github.com/ZRRRY/TinyCade/actions) [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-orange)](#) [![Games](https://img.shields.io/badge/games-111-ff9800)](#)
+
 > 纯前端复古风格小游戏合集，111 款经典下载即玩。零依赖、可部署、可多人同时访问。
 
 ## 特性

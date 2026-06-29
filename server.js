@@ -1,4 +1,4 @@
-// TINYCADE - production static server
+﻿// TINYCADE - production static server
 // Features: path traversal guard, ETag/304, Range (RFC 7233),
 // per-IP rate limit, security headers, pre-compressed .gz / .br serving.
 //
@@ -60,6 +60,7 @@ function etagFor(stat) {
 
 function applySecurityHeaders(res, file) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   if (res.socket && res.socket.encrypted) {
