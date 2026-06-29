@@ -1,0 +1,8 @@
+# 强制 deploy.sh 在任何平台 clone 后都是可执行的
+/deploy.sh    text eol=lf          executable
+
+# 统一 shell 脚本换行符
+*.sh          text eol=lf
+
+# systemd 单元文件必须是 LF
+*.service     text eol=lf

@@ -1,0 +1,37 @@
+# TINYCADE systemd service unit
+# 安装方法：
+#   sudo cp tinycade.service /etc/systemd/system/tinycade.service
+#   sudo sed -i 's|/opt/tinycade|/your/install/path|g; s|User=www-data|User=your-user|g' /etc/systemd/system/tinycade.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now tinycade
+
+[Unit]
+Description=Tinycade static game server (Node)
+Documentation=https://alphac.website
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/tinycade
+ExecStart=/usr/bin/node server.js --root dist --port 8088
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+
+# 进程 / 文件安全
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/tinycade
+LimitNOFILE=65535
+
+# 日志（journalctl -u tinycade 查看）
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tinycade
+
+[Install]
+WantedBy=multi-user.target

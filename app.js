@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    TINYCADE - 主控逻辑
    - 启动动画
    - 路由 (游戏库/游戏/关于)
@@ -271,10 +271,15 @@
     });
 
     // 返回按钮
-    { const e = safeEl('back-btn'); if (e) e.addEventListener('click', () => {
-      Sounds.sfx.beep();
-      showView('library');
-    });
+    {
+      const e = safeEl('back-btn');
+      if (e) {
+        e.addEventListener('click', () => {
+          Sounds.sfx.beep();
+          showView('library');
+        });
+      }
+    }
 
     // 筛选
     document.querySelectorAll('.filter-btn').forEach(btn => {
