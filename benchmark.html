@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TINYCADE - 性能基准</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .bench-wrap { max-width: 720px; margin: 0 auto; padding: 24px; }
+    .bench-card { background: rgba(26,0,48,0.85); border: 2px solid var(--neon-cyan); padding: 16px; margin: 12px 0; font-family: VT323, monospace; }
+    .bench-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed rgba(0,255,255,0.2); }
+    .bench-row:last-child { border-bottom: none; }
+    .bench-label { color: var(--neon-cyan); }
+    .bench-value { color: var(--neon-yellow); font-weight: bold; }
+    .bench-good { color: var(--neon-green); }
+    .bench-warn { color: var(--neon-orange); }
+    .bench-bad { color: #ff0066; }
+    canvas { display: block; border: 2px solid var(--neon-cyan); background: #000; max-width: 100%; }
+    button.pixel-btn { margin: 8px 8px 0 0; padding: 8px 16px; font-family: var(--pixel-font); background: var(--neon-cyan); color: var(--bg-deep); border: 2px solid var(--neon-pink); cursor: pointer; }
+    button.pixel-btn:hover { background: var(--neon-yellow); }
+    button.pixel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="crt-overlay"></div>
+  <div class="crt-scanlines"></div>
+  <div class="crt-vignette"></div>
+  <main class="bench-wrap">
+    <h1 class="hero-title" style="font-size:24px;">\u26a1 \u6027\u80fd\u57fa\u51c6</h1>
+    <p style="color:var(--text-dim);font-family:VT323;font-size:18px;">\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae\u8fd0\u884c\u5404\u9879\u6d4b\u8bd5\u3002\u4f1a\u5728\u63a7\u5236\u53f0\u4ee5\u53ca\u4e0a\u62a5\u7ed3\u679c\u3002</p>
+
+    <div class="bench-card">
+      <h2 style="color:var(--neon-cyan);font-size:16px;margin-bottom:8px;">1. JS \u52a0\u8f7d\u65f6\u95f4</h2>
+      <div class="bench-row"><span class="bench-label">app.js</span><span id="b-app" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">games.js</span><span id="b-games" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">games-extra.js</span><span id="b-games-extra" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">sounds.js</span><span id="b-sounds" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">version.js</span><span id="b-version" class="bench-value">-</span></div>
+      <button type="button" class="pixel-btn" id="btn-load">\u91cd\u65b0\u6d4b\u91cf</button>
+    </div>
+
+    <div class="bench-card">
+      <h2 style="color:var(--neon-cyan);font-size:16px;margin-bottom:8px;">2. Web Vitals</h2>
+      <div class="bench-row"><span class="bench-label">LCP</span><span id="b-lcp" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">CLS</span><span id="b-cls" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">FID \u6216 INP</span><span id="b-fid" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">TTFB</span><span id="b-ttfb" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">DOMContentLoaded</span><span id="b-dcl" class="bench-value">-</span></div>
+    </div>
+
+    <div class="bench-card">
+      <h2 style="color:var(--neon-cyan);font-size:16px;margin-bottom:8px;">3. Canvas \u6e32\u67d3 FPS</h2>
+      <canvas id="b-canvas" width="320" height="200"></canvas>
+      <div class="bench-row" style="margin-top:8px;"><span class="bench-label">FPS</span><span id="b-fps" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">\u5e27\u65f6\u95f4</span><span id="b-frame" class="bench-value">-</span></div>
+      <button type="button" class="pixel-btn" id="btn-fps">\u8fd0\u884c 3 \u79d2</button>
+    </div>
+
+    <div class="bench-card">
+      <h2 style="color:var(--neon-cyan);font-size:16px;margin-bottom:8px;">4. \u5185\u5b58</h2>
+      <div class="bench-row"><span class="bench-label">JS Heap \u4f7f\u7528</span><span id="b-mem" class="bench-value">-</span></div>
+      <div class="bench-row"><span class="bench-label">\u6ce8\u518c\u6e38\u620f\u6570</span><span id="b-games-count" class="bench-value">-</span></div>
+    </div>
+
+    <p style="margin-top:16px;font-family:VT323;font-size:18px;">
+      <a href="./" style="color:var(--neon-pink);">\u2190 \u8fd4\u56de\u6e38\u620f\u5e93</a>
+    </p>
+  </main>
+  <script>
+    const b = (id) => document.getElementById(id);
+    function fmt(ms) { return (ms >= 0 ? ms.toFixed(0) : '-') + ' ms'; }
+    function classify(v, good, warn) { if (v <= good) return 'bench-good'; if (v <= warn) return 'bench-warn'; return 'bench-bad'; }
+    function setMetric(id, value, text) { const el = b(id); el.textContent = text; el.className = 'bench-value ' + (value != null ? classify(value, 0, 0) : ''); }
+
+    // 1. Load times via Resource Timing
+    async function measureLoads() {
+      const entries = performance.getEntriesByType('resource');
+      const want = ['app.', 'games.', 'games-extra.', 'sounds.', 'version.'];
+      for (const prefix of want) {
+        const e = entries.find(x => x.name.includes('/' + prefix) && x.name.endsWith('.js'));
+        if (e) {
+          const key = prefix === 'games-extra.' ? 'b-games-extra' : 'b-' + prefix.replace('.', '');
+          b(key).textContent = fmt(e.duration) + ' (' + (e.transferSize / 1024).toFixed(1) + 'KB)';
+          b(key).className = 'bench-value ' + classify(e.duration, 100, 300);
+        }
+      }
+    }
+
+    // 2. Web Vitals
+    function measureVitals() {
+      try {
+        const nav = performance.getEntriesByType('navigation')[0];
+        if (nav) {
+          b('b-ttfb').textContent = fmt(nav.responseStart - nav.requestStart);
+          b('b-ttfb').className = 'bench-value ' + classify(nav.responseStart - nav.requestStart, 200, 600);
+          b('b-dcl').textContent = fmt(nav.domContentLoadedEventEnd - nav.startTime);
+          b('b-dcl').className = 'bench-value ' + classify(nav.domContentLoadedEventEnd - nav.startTime, 800, 2000);
+        }
+      } catch (e) {}
+      try {
+        new PerformanceObserver((list) => {
+          const last = list.getEntries().pop();
+          b('b-lcp').textContent = fmt(last.startTime);
+          b('b-lcp').className = 'bench-value ' + classify(last.startTime, 2500, 4000);
+        }).observe({ type: 'largest-contentful-paint', buffered: true });
+      } catch (e) {}
+      let cls = 0;
+      try {
+        new PerformanceObserver((list) => {
+          for (const e of list.getEntries()) if (!e.hadRecentInput) cls += e.value || 0;
+          b('b-cls').textContent = cls.toFixed(3);
+          b('b-cls').className = 'bench-value ' + classify(cls, 0.1, 0.25);
+        }).observe({ type: 'layout-shift', buffered: true });
+      } catch (e) {}
+      try {
+        new PerformanceObserver((list) => {
+          for (const e of list.getEntries()) {
+            const v = e.processingEnd - e.startTime;
+            b('b-fid').textContent = fmt(v);
+            b('b-fid').className = 'bench-value ' + classify(v, 100, 300);
+          }
+        }).observe({ type: 'first-input', buffered: true });
+      } catch (e) {}
+    }
+
+    // 3. Canvas FPS
+    function measureFPS() {
+      return new Promise((resolve) => {
+        const canvas = b('b-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        const frames = [];
+        let last = performance.now();
+        const start = last;
+        function tick(t) {
+          frames.push(t - last);
+          last = t;
+          // \u753b\u4e2a\u52a8\u6001\u56fe\u6848
+          ctx.fillStyle = '#0a0014';
+          ctx.fillRect(0, 0, W, H);
+          const x = ((t - start) / 10) % W;
+          for (let i = 0; i < 50; i++) {
+            ctx.fillStyle = 'hsl(' + (i * 7 + t / 10) + ', 100%, 50%)';
+            ctx.fillRect((x + i * 4) % W, 30 + (i * 3) % 150, 3, 3);
+          }
+          ctx.fillStyle = '#00ffff';
+          ctx.font = '14px VT323';
+          ctx.fillText('frame ' + frames.length, 8, 16);
+          if (t - start < 3000) requestAnimationFrame(tick);
+          else {
+            const sum = frames.reduce((a, b) => a + b, 0);
+            const avg = sum / frames.length;
+            const fps = 1000 / avg;
+            const max = Math.max(...frames);
+            b('b-fps').textContent = fps.toFixed(1);
+            b('b-fps').className = 'bench-value ' + classify(1000 / max, 16, 33);
+            b('b-frame').textContent = avg.toFixed(1) + ' ms avg / ' + max.toFixed(1) + ' ms max';
+            b('b-frame').className = 'bench-value ' + classify(max, 16, 33);
+            resolve();
+          }
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+
+    // 4. Memory + games
+    function measureMemory() {
+      if (performance.memory) {
+        const mb = performance.memory.usedJSHeapSize / 1048576;
+        b('b-mem').textContent = mb.toFixed(1) + ' MB';
+        b('b-mem').className = 'bench-value ' + classify(mb, 20, 50);
+      } else {
+        b('b-mem').textContent = 'n/a';
+      }
+      if (typeof Games !== 'undefined') {
+        const n = Games.count ? Games.count() : (Games.list ? Games.list().length : 0);
+        b('b-games-count').textContent = n;
+      }
+    }
+
+    b('btn-load').addEventListener('click', () => { measureLoads(); });
+    b('btn-fps').addEventListener('click', () => { b('btn-fps').disabled = true; measureFPS().then(() => b('btn-fps').disabled = false); });
+
+    window.addEventListener('load', () => {
+      setTimeout(() => { measureLoads(); measureVitals(); measureMemory(); }, 100);
+    });
+  </script>
+</body>
+</html>

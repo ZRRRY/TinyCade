@@ -1,0 +1,29 @@
+# TINYCADE - Caddy \u914d\u7f6e
+# caddy run --config Caddyfile
+
+:8080 {
+    root * .
+
+    encode zstd gzip
+
+    header {
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        X-Frame-Options "SAMEORIGIN"
+        Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+        Content-Security-Policy "default-src '\''self'\''; script-src '\''self'\'' https://fonts.googleapis.com; style-src '\''self'\'' '\''unsafe-inline'\'' https://fonts.googleapis.com; font-src '\''self'\'' https://fonts.gstatic.com data:; img-src '\''self'\'' data:; connect-src '\''self'\''; object-src '\''none'\''; base-uri '\''self'\''; form-action '\''self'\''"
+        # \u6253\u5305\u540e\u7684\u8d44\u6e90\u4f1a\u542b\u54c8\u5e0c\uff0c\u53ef\u4ee5\u6309\u9700\u8c03\u6574 cache
+        Cache-Control "public, max-age=3600"
+    }
+
+    @hashed {
+        path_regexp \.[a-f0-9]{8,}\.(js|css|woff2?|svg|png|jpe?g|gif|webp|ico)$
+    }
+    header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+    @html path *.html
+    header @html Cache-Control "no-cache"
+
+    file_server
+    try_files {path} /index.html
+}

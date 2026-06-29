@@ -1,0 +1,58 @@
+﻿name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Lint + Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Syntax check
+        run: npm run check
+      - name: Build
+        run: npm run build
+      - name: Lint
+        run: npm run test:lint
+      - name: JS smoke test
+        run: npm run test:js
+      - name: Start server
+        run: (node server.js --port 8088 &) ; sleep 2
+      - name: HTTP smoke test
+        run: npm run test:http
+      - name: Server feature test
+        run: npm run test:server
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.node-version }}
+          path: dist/
+          if-no-files-found: error
+
+  security-audit:
+    name: Security patterns
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check for known-bad patterns
+        run: |
+          set -e
+          ! grep -rEn "(\b|^)eval\(" games.js games-extra.js app.js sounds.js || (echo "eval() usage detected"; exit 1)
+          ! grep -rEn "new Function\(" games.js games-extra.js app.js sounds.js || (echo "new Function() usage detected"; exit 1)
+          ! grep -rEn "innerHTML\s*=\s*\`" app.js || (echo "Suspicious innerHTML template literal in app.js"; exit 1)
+          echo "Security patterns OK"

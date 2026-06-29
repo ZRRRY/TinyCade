@@ -1,0 +1,26 @@
+{
+  "name": "TINYCADE",
+  "short_name": "ARCADE",
+  "description": "\u7eaf\u524d\u7aef\u590d\u53e4\u5c0f\u6e38\u620f\u5408\u96c6\uff0c111 \u6b3e\u7ecf\u5178\u3002",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0014",
+  "theme_color": "#0a0014",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMDAwIi8+PHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjIiIGhlaWdodD0iMiIgZmlsbD0iI2ZmMDBmZiIvPjxyZWN0IHg9IjciIHk9IjMiIHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9IiMwMGZmZmYiLz48cmVjdCB4PSIxMSIgeT0iMyIgd2lkdGg9IjIiIGhlaWdodD0iMiIgZmlsbD0iI2ZmZmYwMCIvPjwvc3ZnPg==",
+      "sizes": "16x16",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzBhMDAxNCIvPjxnIGZpbGw9IiNmZiI+PHJlY3QgeD0iMzYiIHk9IjM2IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiNmZjAwZmYiLz48cmVjdCB4PSI4NCIgeT0iMzYiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0iIzAwZmZmZiIvPjxyZWN0IHg9IjEzMiIgeT0iMzYiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0iI2ZmZmYwMCIvPjxyZWN0IHg9IjM2IiB5PSI4NCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjMDBmZmZmIi8+PHJlY3QgeD0iODQiIHk9Ijg0IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiNmZjAwZmYiLz48cmVjdCB4PSIxMzIiIHk9Ijg0IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiNmZmZmMDAiLz48cmVjdCB4PSIzNiIgeT0iMTMyIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiNmZmZmMDAiLz48cmVjdCB4PSI4NCIgeT0iMTMyIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiNmZjAwZmYiLz48cmVjdCB4PSIxMzIiIHk9IjEzMiIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjMDBmZmZmIi8+PC9nPjwvc3ZnPg==",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

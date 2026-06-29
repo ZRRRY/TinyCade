@@ -1,0 +1,22 @@
+{
+  "name": "tinycade",
+  "version": "1.4.0",
+  "description": "TINYCADE - \u590d\u53e4\u98ce\u683c\u5c0f\u6e38\u620f\u5408\u96c6\uff0c\u7eaf\u524d\u7aef\uff0c\u96f6\u4f9d\u8d56",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js --port 8088",
+    "build": "node build.js",
+    "check": "node --check app.js && node --check games.js && node --check games-extra.js && node --check sounds.js && node --check server.js && node --check version.js && node --check build.js && node --check sw.js && node --check benchmark.html 2>/dev/null; node --check test/smoke.js && node --check test/jsdom-smoke.js && node --check test/server-test.js && node --check test/lint.js && node --check test/load-test.js && node --check test/run-all.js && node --check test/unit-test.js && node --check test/audit-test.js",
+    "test:lint": "node test/lint.js",
+    "test:unit": "node test/unit-test.js",
+    "test:audit": "node test/audit-test.js",
+    "test:js": "node test/jsdom-smoke.js",
+    "test:load": "node test/load-test.js --users 50 --requests 20",
+    "test": "npm run build && node test/run-all.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

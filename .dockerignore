@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.agents
+.codex
+.idea
+.vscode
+*.md
+!README.md
+test/
+tests/
+__tests__/
