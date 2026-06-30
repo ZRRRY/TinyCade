@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    TINYCADE - 主控逻辑
    - 启动动画
    - 路由 (游戏库/游戏/关于)
@@ -14,6 +14,7 @@
     view: 'library',         // library | game | about
     currentGame: null,
     cleanup: null,
+    touchCleanup: null,
     played: new Set(),
     totalScore: 0,
     cat: 'all',
@@ -105,10 +106,16 @@
     document.querySelectorAll('.nav-btn[data-view]').forEach(b => {
       b.classList.toggle('active', b.dataset.view === name);
     });
-    if (name !== 'game' && State.cleanup) {
-      State.cleanup();
-      State.cleanup = null;
-      State.currentGame = null;
+    if (name !== 'game') {
+      if (State.cleanup) {
+        State.cleanup();
+        State.cleanup = null;
+        State.currentGame = null;
+      }
+      if (State.touchCleanup) {
+        State.touchCleanup();
+        State.touchCleanup = null;
+      }
     }
     if (name === 'about') updateAboutStats();
     // 焦点管理：跳到主标题
@@ -225,6 +232,7 @@
       State.cleanup = typeof cleanup === 'function' ? cleanup : null;
       // 注入返回与重开按钮
       injectControlButtons(id);
+      injectTouchControls();
       Sounds.sfx.powerup();
     } catch (e) {
       console.error(e);
@@ -258,6 +266,146 @@
     wrap.appendChild(back);
 
     ctrls.appendChild(wrap);
+  }
+
+  // ================== Touch virtual gamepad ==================
+  function isTouchDevice() {
+    var hasTouch = (typeof window !== 'undefined') && (
+      'ontouchstart' in window ||
+      (navigator && navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+      (navigator && navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
+    );
+    var narrow = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
+    return !!(hasTouch && narrow);
+  }
+
+  function createKeyDispatcher(btn, keyName, opts) {
+    opts = opts || {};
+    var active = false;
+    function fireDown() {
+      try {
+        var ev = new KeyboardEvent('keydown', { key: keyName, code: keyName, bubbles: true, cancelable: true });
+        window.dispatchEvent(ev);
+      } catch (e) {}
+    }
+    function fireUp() {
+      try {
+        var ev = new KeyboardEvent('keyup', { key: keyName, code: keyName, bubbles: true, cancelable: true });
+        window.dispatchEvent(ev);
+      } catch (e) {}
+    }
+    function onStart(e) {
+      if (e) e.preventDefault();
+      if (active) return;
+      active = true;
+      btn.classList.add('pressed');
+      if (opts.momentary) { fireDown(); fireUp(); } else { fireDown(); }
+    }
+    function onEnd(e) {
+      if (e) e.preventDefault();
+      if (!active) return;
+      active = false;
+      btn.classList.remove('pressed');
+      if (!opts.momentary) fireUp();
+    }
+    btn.addEventListener('touchstart', onStart, { passive: false });
+    btn.addEventListener('touchend', onEnd, { passive: false });
+    btn.addEventListener('touchcancel', onEnd, { passive: false });
+    btn.addEventListener('mousedown', onStart);
+    btn.addEventListener('mouseup', onEnd);
+    btn.addEventListener('mouseleave', onEnd);
+    return function () {
+      btn.removeEventListener('touchstart', onStart);
+      btn.removeEventListener('touchend', onEnd);
+      btn.removeEventListener('touchcancel', onEnd);
+      btn.removeEventListener('mousedown', onStart);
+      btn.removeEventListener('mouseup', onEnd);
+      btn.removeEventListener('mouseleave', onEnd);
+      if (active) { active = false; if (!opts.momentary) fireUp(); }
+    };
+  }
+
+  function injectTouchControls() {
+    if (!isTouchDevice()) return;
+    var ctrls = document.getElementById('game-controls');
+    if (!ctrls || ctrls.querySelector('.touch-controls')) return;
+    var dpad = document.createElement('div');
+    dpad.className = 'touch-controls show';
+    dpad.setAttribute('role', 'group');
+    dpad.setAttribute('aria-label', '虚拟方向键');
+    function mkBtn(cls, label, title) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'touch-btn ' + cls;
+      b.textContent = label;
+      b.setAttribute('aria-label', title || label);
+      return b;
+    }
+    dpad.appendChild(mkBtn('up', '▲', '上'));
+    dpad.appendChild(mkBtn('left', '◀', '左'));
+    dpad.appendChild(mkBtn('center', 'A', '跳跃/确认/射击'));
+    dpad.appendChild(mkBtn('right', '▶', '右'));
+    dpad.appendChild(mkBtn('down', '▼', '下'));
+    ctrls.appendChild(dpad);
+
+    var row = document.createElement('div');
+    row.className = 'touch-action-row show';
+    row.setAttribute('role', 'group');
+    row.setAttribute('aria-label', '游戏动作');
+    row.appendChild(mkBtn('act-pause', 'PAUSE', '暂停 (P)'));
+    row.appendChild(mkBtn('act-restart', 'RESTART', '重新开始 (R)'));
+    row.appendChild(mkBtn('act-back', 'BACK', '返回 (ESC)'));
+    ctrls.appendChild(row);
+
+    var cleanups = [];
+    cleanups.push(createKeyDispatcher(dpad.querySelector('.up'), 'ArrowUp'));
+    cleanups.push(createKeyDispatcher(dpad.querySelector('.down'), 'ArrowDown'));
+    cleanups.push(createKeyDispatcher(dpad.querySelector('.left'), 'ArrowLeft'));
+    cleanups.push(createKeyDispatcher(dpad.querySelector('.right'), 'ArrowRight'));
+
+    var center = dpad.querySelector('.center');
+    var centerActive = false;
+    function onCenterStart(e) {
+      if (e) e.preventDefault();
+      if (centerActive) return;
+      centerActive = true;
+      center.classList.add('pressed');
+      try { window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true })); } catch (e) {}
+      try { window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true })); } catch (e) {}
+    }
+    function onCenterEnd(e) {
+      if (e) e.preventDefault();
+      if (!centerActive) return;
+      centerActive = false;
+      center.classList.remove('pressed');
+      try { window.dispatchEvent(new KeyboardEvent('keyup', { key: 'a', bubbles: true, cancelable: true })); } catch (e) {}
+      try { window.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true, cancelable: true })); } catch (e) {}
+    }
+    center.addEventListener('touchstart', onCenterStart, { passive: false });
+    center.addEventListener('touchend', onCenterEnd, { passive: false });
+    center.addEventListener('touchcancel', onCenterEnd, { passive: false });
+    center.addEventListener('mousedown', onCenterStart);
+    center.addEventListener('mouseup', onCenterEnd);
+    center.addEventListener('mouseleave', onCenterEnd);
+    cleanups.push(function () {
+      center.removeEventListener('touchstart', onCenterStart);
+      center.removeEventListener('touchend', onCenterEnd);
+      center.removeEventListener('touchcancel', onCenterEnd);
+      center.removeEventListener('mousedown', onCenterStart);
+      center.removeEventListener('mouseup', onCenterEnd);
+      center.removeEventListener('mouseleave', onCenterEnd);
+      if (centerActive) onCenterEnd();
+    });
+
+    cleanups.push(createKeyDispatcher(row.querySelector('.act-pause'), 'p', { momentary: true }));
+    cleanups.push(createKeyDispatcher(row.querySelector('.act-restart'), 'r', { momentary: true }));
+    cleanups.push(createKeyDispatcher(row.querySelector('.act-back'), 'Escape', { momentary: true }));
+
+    State.touchCleanup = function () {
+      cleanups.forEach(function (fn) { try { fn(); } catch (e) {} });
+      if (dpad.parentNode) dpad.parentNode.removeChild(dpad);
+      if (row.parentNode) row.parentNode.removeChild(row);
+    };
   }
 
   // ================== 绑定事件 ==================
