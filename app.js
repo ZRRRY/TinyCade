@@ -270,13 +270,38 @@
 
   // ================== Touch virtual gamepad ==================
   function isTouchDevice() {
-    var hasTouch = (typeof window !== 'undefined') && (
-      'ontouchstart' in window ||
+    if (typeof window === 'undefined') return false;
+    // URL override (diagnostics): ?touchpad=1 强制开启，?touchpad=0 强制关闭
+    try {
+      var sp = location.search || "";
+      if (sp.indexOf("touchpad=1") !== -1) return true;
+      if (sp.indexOf("touchpad=0") !== -1) return false;
+    } catch (e) {}
+    // 触屏能力检测
+    var hasTouch = ('ontouchstart' in window) ||
       (navigator && navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
-      (navigator && navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
-    );
-    var narrow = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
-    return !!(hasTouch && narrow);
+      (navigator && navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0);
+    // 视口宽度（matchMedia 不可用时降级为 innerWidth）
+    var narrow;
+    try {
+      narrow = !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
+    } catch (e) { narrow = false; }
+    if (!narrow) {
+      try { narrow = (window.innerWidth || 0) <= 720; } catch (e) { narrow = false; }
+    }
+    // UA 检测：覆盖 Android/iOS/iPad/微信 X5/QQ/UC 等
+    var ua = (navigator && navigator.userAgent) || '';
+    var isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet|Silk|MicroMessenger|QQ\/|MQQBrowser|UCBrowser|UCWEB/i.test(ua);
+    // 设备方向 API
+    var hasOrientation = (typeof window.orientation !== 'undefined') || (window.screen && window.screen.orientation && typeof window.screen.orientation.type === 'string');
+    // 决策：触屏 + 窄屏 是黄金组合；触屏 + 移动 UA 也很强；其他兜底
+    if (hasTouch && narrow) return true;
+    if (hasTouch && isMobileUA) return true;
+    if (narrow && isMobileUA) return true;
+    if (hasTouch) return true;  // 任何触屏设备都显示（包括 PC 触屏笔记本）
+    if (narrow && hasOrientation) return true;
+    if (isMobileUA && narrow) return true;
+    return false;
   }
 
   function createKeyDispatcher(btn, keyName, opts) {
@@ -491,6 +516,13 @@
       bindEvents();
       renderLibrary();
       bootAnimation();
+          try {
+        var _qs = location.search.substring(1);
+        var _m = _qs.match(/(?:^|&)game=([a-z0-9_-]+)/i);
+        if (_m && Games.get(_m[1])) {
+          setTimeout(function() { launchGame(_m[1]); }, 200);
+        }
+      } catch (e) {}
     } catch (e) {
       console.error('Init failed:', e);
       const root = document.getElementById('view-library') || document.body;
