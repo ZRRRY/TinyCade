@@ -1,8 +1,9 @@
 # TINYCADE 引擎化 · 完整实施文档
 
-> **版本**: 1.1 · 2026-07-03
+> **版本**: 1.2 · 2026-07-03
 > **状态**: 阶段 0–3 已完成（110/110 游戏迁移 + 111 个金样本 + lint/replay 全绿）
 >          阶段 4（深链/OG/每日挑战）独立提案，未启动
+> **v1.2 校准**: §11.1.1 `?game=` 实际位置 app.js:730（不是 520），已实现；OG 生成确认未实现；§15 row 6 标记 fallback 文件未删。
 > **适用范围**: 从"111 个独立命令式 factory"演进为"1 个确定性引擎 + 111 份薄游戏逻辑"，并在其上兑现代码分割、玩法级测试、每日挑战等能力。
 > **前置阅读**: `CODE_REVIEW.md`（问题清单 C1–C3 / H3 / H5 / M6 已在此文档得到结构性解决）
 
@@ -487,8 +488,8 @@ CI（`.github/`）在现有 `npm test` 中追加 `test:replay`。**每个迁移�
 
 ### 11.1 深链 + OG 预览
 
-- 现有 `?game=` 雏形（`app.js:520`）升级为干净 URL：`/#/snake` 或 History API `/play/snake`。
-- 每游戏一张 OG 图：`build.js` 阶段用无头 canvas（或预置封面）为每个 `meta` 生成 `og/<id>.png`，写入 `<meta property="og:image">`（需按路由动态，静态多页或运行时注入）。
+- 现有 `?game=`（`app.js:730`，走 `findById` + `launchGame`）已可工作，但 URL 不够干净。阶段 4 升级为 `/#/snake` 或 History API `/play/snake`。
+- 每游戏一张 OG 图：`build.js` 阶段用无头 canvas（或预置封面）为每个 `meta` 生成 `og/<id>.png`，写入 `<meta property="og:image">`（需按路由动态，静态多页或运行时注入）。**当前未实现，待阶段 4 启动**。
 
 ### 11.2 每日挑战（技术投资的复利兑现）
 
@@ -576,7 +577,7 @@ CI（`.github/`）在现有 `npm test` 中追加 `test:replay`。**每个迁移�
 | 3 | strategy | 井字棋/五子棋/黑白棋/围棋/点格/曼卡拉/尼姆/…（14 款） | ✅ | ✅ | 阶段 3 收口 |
 | 4 | action | 像素鸟/忍者/弹幕/滑翔/打砖块/剑客/…（21 款） | ✅ | ✅ | 阶段 3 收口 |
 | 5 | casual | 记忆/猜数字/西蒙说/老虎机/21点/速算/…（19 款） | ✅ | ✅ | 阶段 3 收口 |
-| 6 | extra | games-extra.js 中其余迁移项 | ✅ | ✅ | 阶段 3 收口 |
+| 6 | extra | games-extra.js 中其余迁移项 | ✅ | ✅ | 迁移完成；旧文件仍作 fallback path 保留（删除待后续单独 commit） |
 
 ---
 
