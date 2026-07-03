@@ -1,0 +1,6 @@
+[
+  { "tick": 8,  "held": { "down": true } },
+  { "tick": 9,  "held": {} },
+  { "tick": 17, "held": { "right": true } },
+  { "tick": 18, "held": {} }
+]

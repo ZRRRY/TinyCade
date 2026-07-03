@@ -1,0 +1,12 @@
+{
+  "game": "clicker",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "2e19ce48"
+}

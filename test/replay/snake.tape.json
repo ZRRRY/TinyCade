@@ -1,0 +1,31 @@
+{
+  "game": "snake",
+  "seed": 12345,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    },
+    {
+      "tick": 8,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 9,
+      "held": {}
+    },
+    {
+      "tick": 17,
+      "held": {
+        "right": true
+      }
+    },
+    {
+      "tick": 18,
+      "held": {}
+    }
+  ],
+  "expect": "7a33e04a"
+}

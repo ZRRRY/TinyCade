@@ -1,0 +1,12 @@
+{
+  "game": "centipede",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "291f7169"
+}

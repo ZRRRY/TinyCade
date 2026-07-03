@@ -1,0 +1,12 @@
+{
+  "game": "runnerplat",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "be0ad081"
+}

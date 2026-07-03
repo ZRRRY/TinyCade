@@ -1,0 +1,12 @@
+{
+  "game": "tictactoe",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "b07d1096"
+}

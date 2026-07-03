@@ -1,0 +1,12 @@
+{
+  "game": "shapematch",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "75e08f89"
+}

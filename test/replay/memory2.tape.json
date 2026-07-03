@@ -1,0 +1,12 @@
+{
+  "game": "memory2",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "7ded7ca2"
+}

@@ -1,0 +1,12 @@
+{
+  "game": "shikaku",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "9de42b1f"
+}

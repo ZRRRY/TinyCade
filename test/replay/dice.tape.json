@@ -1,0 +1,12 @@
+{
+  "game": "dice",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "93138a08"
+}

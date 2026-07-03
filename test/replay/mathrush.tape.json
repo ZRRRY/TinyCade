@@ -1,0 +1,12 @@
+{
+  "game": "mathrush",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "6915dd55"
+}

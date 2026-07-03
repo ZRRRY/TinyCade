@@ -1,0 +1,12 @@
+{
+  "game": "archery",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "a689941f"
+}

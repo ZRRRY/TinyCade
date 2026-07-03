@@ -1,0 +1,12 @@
+{
+  "game": "glider",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "b7c55929"
+}

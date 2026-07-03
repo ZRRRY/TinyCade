@@ -1,0 +1,12 @@
+{
+  "game": "simon",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "ec88ff58"
+}

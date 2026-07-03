@@ -1,0 +1,12 @@
+{
+  "game": "colorswitch",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "913cf2d6"
+}

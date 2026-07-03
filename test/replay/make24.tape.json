@@ -1,0 +1,12 @@
+{
+  "game": "make24",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "39883d6"
+}

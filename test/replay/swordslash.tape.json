@@ -1,0 +1,12 @@
+{
+  "game": "swordslash",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "9d88b8d1"
+}

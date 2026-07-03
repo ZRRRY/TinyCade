@@ -1,0 +1,12 @@
+{
+  "game": "coinflip",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "cf877ff4"
+}

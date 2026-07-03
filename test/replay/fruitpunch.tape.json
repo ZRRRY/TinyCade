@@ -1,0 +1,12 @@
+{
+  "game": "fruitpunch",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "94f82e22"
+}

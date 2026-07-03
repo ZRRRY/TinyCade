@@ -1,0 +1,12 @@
+{
+  "game": "runner",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "fa6d5cde"
+}

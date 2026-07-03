@@ -1,0 +1,12 @@
+{
+  "game": "laser",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "95b6c5db"
+}

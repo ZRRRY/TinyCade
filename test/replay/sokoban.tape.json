@@ -1,0 +1,12 @@
+{
+  "game": "sokoban",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "2c973f4"
+}

@@ -1,0 +1,12 @@
+{
+  "game": "dart",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "8e89fff1"
+}

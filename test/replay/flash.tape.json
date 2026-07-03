@@ -1,0 +1,12 @@
+{
+  "game": "flash",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "6f71d559"
+}

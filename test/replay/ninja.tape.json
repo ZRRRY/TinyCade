@@ -1,0 +1,12 @@
+{
+  "game": "ninja",
+  "seed": 12345,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    }
+  ],
+  "expect": "df891a0"
+}

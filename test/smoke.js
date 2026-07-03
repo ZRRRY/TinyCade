@@ -1,4 +1,4 @@
-// TINYCADE \u70df\u96fe\u6d4b\u8bd5
+﻿// TINYCADE \u70df\u96fe\u6d4b\u8bd5
 // \u4f7f\u7528\uff1anpm run smoke
 // \u4f9d\u8d56\uff1a\u542f\u52a8 server.js\uff0c\u672c\u811a\u672c\u4f1a\u4ee5 HTTP \u8bf7\u6c42\u9a8c\u8bc1\u5173\u952e\u8d44\u6e90
 
@@ -78,7 +78,7 @@ async function main() {
 
   // 8. JS \u6587\u4ef6\u542b\u5173\u952e\u5168\u5c40
   const app = await request(BASE + '/app.js');
-  ok('app.js \u542b Games \u5f15\u7528', /Games\./.test(app.body));
+  ok('app.js 含 Games/Registry 引用（兼容回退路径）', /Games\.|Registry\.|ensureLegacyGames/.test(app.body));
   ok('app.js \u542b Sounds \u5f15\u7528', /Sounds\./.test(app.body));
   ok('app.js \u4f7f\u7528 textContent', /textContent/.test(app.body));
   ok('app.js \u542b visibilitychange \u5904\u7406', /visibilitychange/.test(app.body));
