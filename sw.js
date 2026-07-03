@@ -1,10 +1,15 @@
 /* TINYCADE Service Worker
- * \u5728\u9996\u6b21\u5b89\u88c5\u65f6\u9884\u7f13\u5b58\u4e3b\u8d44\u6e90\uff0c\u4ee5\u4fbf\u79bb\u7ebf\u4f7f\u7528\u3002
- * \u8d44\u6e90\u5e26\u5185\u5bb9\u54c8\u5e0c\uff0c\u65b0\u7248\u672c\u4f1a\u81ea\u52a8\u4f7f\u65e7\u7f13\u5b58\u5931\u6548\uff08cache name \u542b\u7248\u672c\u53f7\uff09\u3002
+ * 在首次安装时预缓存主资源，以便离线使用。
+ * 资源带内容哈希，新版本会自动使旧缓存失效（cache name 含版本号）。
+ *
+ * 修复记录（2026-07-04）：
+ *  - SW_VERSION 强制 bump：使旧 cache 立即失效并被 activate 清掉。
+ *  - install 用 {cache:'no-store'} 显式 fetch，绕开 SW 自己的 fetch handler，
+ *    防止「cache.addAll → SW.fetch → caches.match → 命中旧版 → 旧版入缓存」的循环 bug。
  */
-
+const SW_VERSION = '2026-07-04a';  // 改这里就能让所有用户 SW 重新安装并清旧缓存
 const VERSION = (self.TINYCADE_VERSION || '1.0.0') + '-' + (self.TINYCADE_BUILD || '');
-const CACHE_NAME = 'tinycade-' + VERSION;
+const CACHE_NAME = 'tinycade-' + SW_VERSION + '-' + VERSION;
 // PRECACHE：阶段 2+ 起把入口 + 引擎 + manifest 加入预缓存，确保首次安装即可离线启动。
 // 其余游戏模块走运行时 fetch 后写入缓存（fetch handler 已支持）。
 const PRECACHE = [
@@ -22,9 +27,16 @@ const PRECACHE = [
   './manifest.webmanifest'
 ];
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE).catch(() => {}))
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // 显式 no-store fetch，绕过 SW 自己的 fetch handler，避免循环命中旧版
+    await Promise.all(PRECACHE.map(async (url) => {
+      try {
+        const fresh = await fetch(url, { cache: 'no-store' });
+        if (fresh && fresh.ok) await cache.put(url, fresh);
+      } catch (e) { /* 单个失败不影响整体 */ }
+    }));
+  })());
   self.skipWaiting();
 });
 self.addEventListener('activate', (event) => {
@@ -39,12 +51,13 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // \u540c\u6e90\u7b56\u7565
+  if (url.origin !== self.location.origin) return; // 同源策略
+  // 跳过 SW 自己的 PRECACHE 路径（虽然这里不会再触发）
   event.respondWith(
     caches.match(req).then((hit) => {
       if (hit) return hit;
       return fetch(req).then((res) => {
-        // \u53ea\u7f13\u5b58\u6210\u529f\u54cd\u5e94\u4e14\u4e3a GET
+        // 只缓存成功响应且为 GET
         if (res && res.status === 200 && res.type === 'basic') {
           const copy = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});

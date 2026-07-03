@@ -136,8 +136,11 @@ const Sounds = (() => {
     click: () => tone(NOTE.G5, 0.03, 'square', 0.15),
     pop: () => { sweep(400, 800, 0.08, 'sine', 0.3); },
     swoosh: () => sweep(200, 1200, 0.2, 'triangle', 0.2)
-  };
+};
 
   return { sfx, setEnabled, isEnabled, getCtx, tone, sweep, noise, NOTE };
 })();
+// 暴露到 window：app.js 是 ES Module，只能通过 window.* 访问 classic 脚本的全局。
+// （const 顶层声明不会成为 window 属性，模块脚本的 const Sounds = window.Sounds 会拿到 undefined）
+window.Sounds = Sounds;
 
