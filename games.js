@@ -2253,3 +2253,6 @@ const Games = (() => {
 
   return { list, get, count, define, fitCanvas, clear, rect, pxrect, text, key, loop, tickLoop, safeEval };
 })();
+// 暴露到 window，便于 app.js (ES Module) 在 fallback 路径访问老注册表。
+// 顶层 const 在经典脚本间共享词法作用域，但对 ES Module 不可见，必须显式挂到 window。
+window.Games = Games;
