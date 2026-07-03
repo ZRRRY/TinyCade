@@ -5,8 +5,20 @@
 
 const VERSION = (self.TINYCADE_VERSION || '1.0.0') + '-' + (self.TINYCADE_BUILD || '');
 const CACHE_NAME = 'tinycade-' + VERSION;
+// PRECACHE：阶段 2+ 起把入口 + 引擎 + manifest 加入预缓存，确保首次安装即可离线启动。
+// 其余游戏模块走运行时 fetch 后写入缓存（fetch handler 已支持）。
 const PRECACHE = [
   './',
+  './app.js',
+  './sounds.js',
+  './version.js',
+  './style.css',
+  './engine/engine.js',
+  './engine/input.js',
+  './engine/recorder.js',
+  './engine/rng.js',
+  './games/manifest.js',
+  './games/snake.js',
   './manifest.webmanifest'
 ];
 self.addEventListener('install', (event) => {

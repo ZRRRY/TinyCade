@@ -13,7 +13,8 @@
     "test:audit": "node test/audit-test.js",
     "test:js": "node test/jsdom-smoke.js",
     "test:load": "node test/load-test.js --users 50 --requests 20",
-    "test": "npm run build && node test/run-all.js"
+    "test:replay": "node test/replay-test.js",
+    "test": "npm run build && node test/run-all.js && npm run test:replay"
   },
   "engines": {
     "node": ">=18"

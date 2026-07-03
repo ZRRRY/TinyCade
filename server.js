@@ -1,4 +1,4 @@
-﻿// TINYCADE - production static server
+// TINYCADE - production static server
 // Features: path traversal guard, ETag/304, Range (RFC 7233),
 // per-IP rate limit, security headers, pre-compressed .gz / .br serving.
 //

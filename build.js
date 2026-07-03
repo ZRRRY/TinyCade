@@ -11,7 +11,23 @@ const zlib = require('zlib');
 
 const ROOT = __dirname;
 const DIST = path.join(ROOT, 'dist');
-const ASSETS = ['app.js', 'games.js', 'games-extra.js', 'sounds.js', 'version.js', 'style.css'];
+// 顶层入口：浏览器 index.html 直接引用，必须做 SRI + 内容哈希。
+const ASSETS_TOP = ['app.js', 'sounds.js', 'version.js', 'style.css'];
+
+// 阶段 2+：扫描 engine/ + games/ 目录生成动态 ASSETS。
+// 这些文件经过哈希 + 写入 manifest.json；但浏览器通过 import('./engine/rng.js') 这类
+// 静态字面量导入，并不会被构建改写，所以下方会再以**原文**复制一份进入 dist/。
+// 原文与哈希版共存：前者满足 import 字面量解析，后者为 asset-manifest.json 报告。
+function scanJsDir(dir) {
+  const full = path.join(ROOT, dir);
+  if (!fs.existsSync(full)) return [];
+  return fs.readdirSync(full)
+    .filter((f) => f.endsWith('.js') && !f.startsWith('_'))
+    .map((f) => path.posix.join(dir, f));
+}
+const ASSETS_DYNAMIC = [...scanJsDir('engine'), ...scanJsDir('games')];
+const ASSETS = [...ASSETS_TOP, ...ASSETS_DYNAMIC];
+
 const STATIC_FILES = [
   'index.html', 'README.md', 'SECURITY.md', 'CHANGELOG.md', 'CODE_REVIEW.md',
   'DEPLOYMENT_PLAN.md', 'nginx.conf', 'Caddyfile', 'vercel.json', 'Dockerfile',
@@ -58,6 +74,22 @@ function main() {
   if (!fs.existsSync(DIST)) fs.mkdirSync(DIST, { recursive: true });
   for (const f of fs.readdirSync(DIST)) rmrf(path.join(DIST, f));
 
+  // 0a. 递归复制 engine/ 与 games/（**原文**，无哈希），保证 import('./engine/X.js')
+  //     与 await import(`./games/${id}.js`) 在 dist/ 中可直接解析。
+  for (const dir of ['engine', 'games']) {
+    const src = path.join(ROOT, dir);
+    if (!fs.existsSync(src)) continue;
+    const dst = path.join(DIST, dir);
+    fs.mkdirSync(dst, { recursive: true });
+    for (const f of fs.readdirSync(src)) {
+      if (!f.endsWith('.js') || f.startsWith('_')) continue;
+      const s = path.join(src, f);
+      const d = path.join(dst, f);
+      fs.copyFileSync(s, d);
+      if (COMPRESSIBLE.test(f)) compress(d, fs.readFileSync(d));
+    }
+  }
+
   // 1. copy static files
   for (const f of STATIC_FILES) {
     const src = path.join(ROOT, f);
@@ -92,11 +124,16 @@ function main() {
 
   // 3. rewrite index.html
   let html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  // 仅顶层资源参与字面量改写 + SRI 注入；engine/*.js 与 games/*.js 通过静态 import()
+  // 引用，URL 字面量不能改写（需要 import-map），因此跳过。
+  const TOP_LEVEL_PATHS = new Set(ASSETS_TOP);
   for (const [orig, hashed] of Object.entries(manifest)) {
+    if (!TOP_LEVEL_PATHS.has(orig)) continue;
     const escOrig = orig.replace(/\./g, '\\.');
     html = html.replace(new RegExp(escOrig, 'g'), hashed);
   }
   for (const [orig, info] of Object.entries(sri)) {
+    if (!TOP_LEVEL_PATHS.has(orig)) continue;
     if (orig.endsWith('.css')) {
       const re = new RegExp(`<link rel="stylesheet" href="${info.file.replace(/\./g, '\\.')}"\\s*/?>`);
       html = html.replace(re, `<link rel="stylesheet" href="${info.file}" integrity="${info.integrity}" crossorigin="anonymous" />`);
@@ -106,10 +143,13 @@ function main() {
     }
   }
   const verHash = sha(Buffer.from(fs.readFileSync(path.join(ROOT, 'version.js'), 'utf8')));
+  // 顶层入口已经在 index.html 通过静态 <script type="module" src="app.js"> 引入；
+  // 这里的 preload 是额外加速提示。
   const preload = `  <meta name="build-hash" content="${verHash}" />
   <link rel="preload" as="script" href="${manifest['app.js']}" crossorigin="anonymous" />
   <link rel="preload" as="style" href="${manifest['style.css']}" crossorigin="anonymous" />
-  <link rel="preload" as="script" href="${manifest['games.js']}" crossorigin="anonymous" />`;
+  <link rel="preload" as="script" href="${manifest['engine/engine.js'] || 'engine/engine.js'}" crossorigin="anonymous" />
+  <link rel="preload" as="script" href="${manifest['games/manifest.js'] || 'games/manifest.js'}" crossorigin="anonymous" />`;
   html = html.replace('</head>', `${preload}\n</head>`);
   fs.writeFileSync(path.join(DIST, 'index.html'), html);
   if (COMPRESSIBLE.test('index.html')) compress(path.join(DIST, 'index.html'), Buffer.from(html));
