@@ -1,0 +1,242 @@
+{
+  "game": "g2048",
+  "seed": 30001,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {
+        "select": true
+      }
+    },
+    {
+      "tick": 15,
+      "held": {
+        "left": true
+      }
+    },
+    {
+      "tick": 35,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 55,
+      "held": {
+        "b": true
+      }
+    },
+    {
+      "tick": 60,
+      "held": {
+        "start": true
+      }
+    },
+    {
+      "tick": 65,
+      "held": {
+        "right": true
+      }
+    },
+    {
+      "tick": 80,
+      "held": {
+        "b": true
+      }
+    },
+    {
+      "tick": 85,
+      "held": {
+        "left": true
+      }
+    },
+    {
+      "tick": 110,
+      "held": {
+        "right": true
+      }
+    },
+    {
+      "tick": 130,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 140,
+      "held": {
+        "up": false
+      }
+    },
+    {
+      "tick": 155,
+      "held": {
+        "right": true
+      }
+    },
+    {
+      "tick": 160,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 185,
+      "held": {
+        "a": true
+      }
+    },
+    {
+      "tick": 190,
+      "held": {
+        "start": true
+      }
+    },
+    {
+      "tick": 195,
+      "held": {
+        "a": true
+      }
+    },
+    {
+      "tick": 210,
+      "held": {
+        "right": true
+      }
+    },
+    {
+      "tick": 240,
+      "held": {
+        "select": true
+      }
+    },
+    {
+      "tick": 270,
+      "held": {
+        "b": true
+      }
+    },
+    {
+      "tick": 275,
+      "held": {
+        "select": true
+      }
+    },
+    {
+      "tick": 285,
+      "held": {
+        "start": true
+      }
+    },
+    {
+      "tick": 290,
+      "held": {
+        "left": true
+      }
+    },
+    {
+      "tick": 310,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 315,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 320,
+      "held": {
+        "left": true
+      }
+    },
+    {
+      "tick": 325,
+      "held": {
+        "a": true
+      }
+    },
+    {
+      "tick": 335,
+      "held": {
+        "left": true
+      }
+    },
+    {
+      "tick": 340,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 345,
+      "held": {
+        "left": true
+      }
+    },
+    {
+      "tick": 360,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 385,
+      "held": {
+        "start": true
+      }
+    },
+    {
+      "tick": 395,
+      "held": {
+        "left": true
+      }
+    },
+    {
+      "tick": 435,
+      "held": {
+        "a": true
+      }
+    },
+    {
+      "tick": 445,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 455,
+      "held": {
+        "start": true
+      }
+    },
+    {
+      "tick": 475,
+      "held": {
+        "start": false
+      }
+    },
+    {
+      "tick": 485,
+      "held": {
+        "select": true
+      }
+    },
+    {
+      "tick": 490,
+      "held": {
+        "right": true
+      }
+    },
+    {
+      "tick": 495,
+      "held": {
+        "b": true
+      }
+    }
+  ],
+  "expect": "7b99b994"
+}

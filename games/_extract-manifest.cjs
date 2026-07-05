@@ -1,60 +1,57 @@
-/* Temp extractor: loads games.js + games-extra.js in a stubbed Node
-   context, reads Games.list(), and emits games/manifest.js.
-   This is the ONLY file allowed to use require/CJS (per task spec). */
+/* ============================================================
+   games/_extract-manifest.cjs — 元数据生成器
+   扫描 games/*.js，提取每个游戏的 meta 对象，输出 games/manifest.js。
+   仅处理文件系统，不执行游戏逻辑；meta 内不支持运行时表达式。
+   ============================================================ */
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
-const gamesJs = fs.readFileSync(path.join(root, 'games.js'), 'utf8');
-const extraJs = fs.readFileSync(path.join(root, 'games-extra.js'), 'utf8');
+const gamesDir = path.join(root, 'games');
 
-// Minimal browser stubs — factories are NOT executed at define() time,
-// so these only need to exist, not behave.
-const noop = () => {};
-const sandbox = {
-  console,
-  window: {
-    devicePixelRatio: 1,
-    addEventListener: noop,
-    removeEventListener: noop,
-    requestAnimationFrame: noop,
-    cancelAnimationFrame: noop,
-  },
-  document: { hidden: false, createElement: () => ({ getContext: () => ({}), style: {}, addEventListener: noop, removeEventListener: noop }) },
-  localStorage: { getItem: () => null, setItem: noop },
-  Sounds: new Proxy({}, { get: () => new Proxy({}, { get: () => noop }) }),
-  requestAnimationFrame: noop,
-  cancelAnimationFrame: noop,
-  performance: { now: () => 0 },
-};
-sandbox.globalThis = sandbox;
+function extractMeta(src) {
+  // 定位 "meta:" 后第一个 "{"，然后花括号匹配到闭合。
+  const idx = src.indexOf('meta:');
+  if (idx < 0) return null;
+  let start = src.indexOf('{', idx);
+  if (start < 0) return null;
+  let depth = 0;
+  for (let i = start; i < src.length; i++) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}') { depth--; if (depth === 0) {
+      const block = src.slice(start, i + 1);
+      try { return eval('(' + block + ')'); } catch (e) { return null; }
+    }}
+  }
+  return null;
+}
 
-const ctx = vm.createContext(sandbox);
-// const Games = (...)  — lexical const won't attach to global, so append an
-// assignment inside the same script so we can read it back out.
-const code = gamesJs + '\n' + extraJs + '\n;globalThis.__GAMES__ = Games;';
-vm.runInContext(code, ctx, { filename: 'games-bundle.js' });
-
-const list = sandbox.__GAMES__.list();
-const entries = list.map((g) => ({
-  id: g.id,
-  name: g.name,
-  desc: g.desc,
-  icon: g.icon,
-  cat: g.cat,
-  controls: g.controls,
-}));
+const entries = [];
+for (const f of fs.readdirSync(gamesDir).sort()) {
+  if (!f.endsWith('.js') || f.startsWith('_') || f === 'manifest.js') continue;
+  const src = fs.readFileSync(path.join(gamesDir, f), 'utf8');
+  const meta = extractMeta(src);
+  if (!meta) { console.warn('skip', f, '(no meta)'); continue; }
+  entries.push({
+    id: meta.id,
+    name: meta.name,
+    desc: meta.desc,
+    icon: meta.icon,
+    cat: meta.cat,
+    controls: meta.controls,
+    ...(meta.width ? { width: meta.width } : {}),
+    ...(meta.height ? { height: meta.height } : {}),
+  });
+}
 
 console.log('Extracted', entries.length, 'entries');
 
-// Pretty-print as ESM module.
 const body = entries.map((e) => '  ' + JSON.stringify(e) + ',').join('\n');
 const out = `/* ============================================================
    games/manifest.js — 游戏元数据注册表（§8.1）
-   自 games.js + games-extra.js 抽取的全量元数据（${entries.length} 条），
-   仅含 id/name/desc/icon/cat/controls，不含逻辑，首屏加载。
+   自 games/*.js 扫描提取的全量元数据（${entries.length} 条），
+   仅含 id/name/desc/icon/cat/controls 及可选 width/height，不含逻辑，首屏加载。
    本文件由 games/_extract-manifest.cjs 生成，请勿手改。
    ============================================================ */
 
@@ -67,5 +64,5 @@ export function findById(id) {
 }
 `;
 
-fs.writeFileSync(path.join(root, 'games', 'manifest.js'), out, 'utf8');
+fs.writeFileSync(path.join(gamesDir, 'manifest.js'), out, 'utf8');
 console.log('Wrote games/manifest.js');

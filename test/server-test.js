@@ -48,20 +48,20 @@ async function main() {
   ok('GET /version.js 200 + ETag', r1.status === 200 && !!etag);
   const r2 = await request(BASE + '/version.js', { headers: { 'If-None-Match': etag } });
   ok('If-None-Match -> 304', r2.status === 304);
-  const r3 = await request(BASE + '/games.js', { headers: { 'Range': 'bytes=0-99' } });
+  const r3 = await request(BASE + '/app.js', { headers: { 'Range': 'bytes=0-99' } });
   ok('Range -> 206', r3.status === 206);
   ok('Range Content-Range', !!r3.headers['content-range']);
   ok('Range length 100', r3.headers['content-length'] === '100');
-  const r4 = await request(BASE + '/games.js', { headers: { 'Range': 'bytes=-100' } });
+  const r4 = await request(BASE + '/app.js', { headers: { 'Range': 'bytes=-100' } });
   ok('Suffix range -> 206', r4.status === 206);
   ok('Suffix length 100', r4.headers['content-length'] === '100');
-  const r5 = await request(BASE + '/games.js', { headers: { 'Range': 'bytes=100-' } });
+  const r5 = await request(BASE + '/app.js', { headers: { 'Range': 'bytes=100-' } });
   ok('Open-ended -> 206', r5.status === 206);
-  const r6 = await request(BASE + '/games.js', { headers: { 'Range': 'bytes=99999999-' } });
+  const r6 = await request(BASE + '/app.js', { headers: { 'Range': 'bytes=99999999-' } });
   ok('OOR -> 416', r6.status === 416);
-  const r7 = await request(BASE + '/games.js');
+  const r7 = await request(BASE + '/app.js');
   ok('unhashed 1h', /max-age=3600/.test(r7.headers['cache-control'] || ''));
-  const r8 = await request(BASE + '/games.js', { method: 'HEAD' });
+  const r8 = await request(BASE + '/app.js', { method: 'HEAD' });
   ok('HEAD 200', r8.status === 200);
   ok('HEAD has CL', !!r8.headers['content-length']);
   for (const p of ['/..%2Fserver.js', '/%2e%2e%2fserver.js']) {

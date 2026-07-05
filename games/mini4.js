@@ -4,6 +4,8 @@
    - 演示模式：BTN.a 自动按 SOL 解填到下一个空格。
    ============================================================ */
 
+import { centerText } from '../engine/draw.js';
+
 export default {
   meta: {
     id: 'mini4',
@@ -75,10 +77,8 @@ export default {
           ctx.fillRect(ox + x * CELL, oy + y * CELL, CELL, CELL);
           if (board[y][x]) {
             const isGiven = given.some((g) => g.x === x && g.y === y);
-            ctx.fillStyle = isGiven ? '#00ffff' : '#ffff00';
-            ctx.font = '36px VT323, monospace';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(board[y][x], ox + x * CELL + CELL / 2, oy + y * CELL + CELL / 2);
+            const numColor = isGiven ? '#00ffff' : '#ffff00';
+            centerText(ctx, board[y][x], ox + x * CELL + CELL / 2, oy + y * CELL + CELL / 2 - 18, numColor, 36);
           }
         }
         ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 4;

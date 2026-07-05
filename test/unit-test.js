@@ -1,148 +1,171 @@
-// TINYCADE 单元测试: Games.loop / Games.tickLoop / Games.safeEval
-const fs = require("fs");
-const path = require("path");
-const vm = require("vm");
+// TINYCADE 单元测试：engine 模块
+// rng 确定性、recorder 录制/回放、input 快照边沿。
+
+const { pathToFileURL } = require('url');
+const path = require('path');
 
 let failed = 0, passed = 0;
 function ok(name, cond, detail) {
-  if (cond) { passed++; console.log("  PASS " + name); }
-  else { failed++; console.log("  FAIL " + name + (detail ? " :: " + detail : "")); }
+  if (cond) { passed++; console.log('  PASS ' + name); }
+  else { failed++; console.log('  FAIL ' + name + (detail ? ' :: ' + detail : '')); }
 }
 
-function makeElement() {
-  const el = {
-    children: [], childNodes: [], style: {},
-    classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
-    dataset: {}, attributes: {}, listeners: {}, _qCache: {},
-    appendChild(c) { this.children.push(c); this.childNodes.push(c); return c; },
-    removeChild() {},
-    addEventListener() {}, removeEventListener() {},
-    setAttribute(k, v) { this.attributes[k] = v; },
-    getAttribute(k) { return this.attributes[k]; },
-    querySelector(sel) { if (!this._qCache[sel]) this._qCache[sel] = makeElement(); return this._qCache[sel]; },
-    querySelectorAll() { return []; },
-    focus() {}, blur() {}, click() {},
-    getContext() { return new Proxy({}, { get: () => () => ({}) }); },
-    getBoundingClientRect() { return { left: 0, top: 0, width: 480, height: 480 }; },
-    width: 480, height: 480,
-    innerHTML: "", textContent: "", value: ""
-  };
-  Object.defineProperty(el, "tagName", { get() { return "DIV"; } });
-  return el;
+const root = path.join(__dirname, '..');
+async function importEngine(name) {
+  return import(pathToFileURL(path.join(root, 'engine', name + '.js')).href);
 }
 
-const fakeDoc = {
-  readyState: "complete", hidden: false,
-  addEventListener() {}, removeEventListener() {},
-  getElementById() { return makeElement(); },
-  querySelector() { return null; },
-  querySelectorAll() { return []; },
-  createElement(t) { return makeElement(t); },
-  body: makeElement()
-};
-const fakeWindow = {
-  devicePixelRatio: 1, addEventListener() {}, removeEventListener() {},
-  innerWidth: 1024, innerHeight: 768,
-  AudioContext: undefined, webkitAudioContext: undefined,
-  TINYCADE_VERSION: "test", TINYCADE_BUILD: "test"
-};
-fakeWindow.document = fakeDoc;
-fakeWindow.window = fakeWindow;
+async function main() {
+  const { makeRng, seedFrom } = await importEngine('rng');
+  const { replay, hashState, createRecorder, encodeFrames, decodeFrames } = await importEngine('recorder');
+  const { BTN } = await importEngine('input');
+  const { pulse, flash, pixelText, centerText, strokeGrid } = await importEngine('draw');
 
-const sandbox = {
-  window: fakeWindow, document: fakeDoc, console,
-  Math, Date, JSON, Number, Array, Object, String, Boolean, Error, Promise, Map, Set, Symbol, RegExp, performance,
-  setTimeout, clearTimeout, setInterval, clearInterval,
-  parseInt, parseFloat, isNaN, isFinite,
-  localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} }
-};
-sandbox.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 0);
-sandbox.cancelAnimationFrame = (id) => clearTimeout(id);
-sandbox.self = sandbox;
-const ctx = vm.createContext(sandbox);
+  // === rng ===
+  console.log('--- rng ---');
+  const r1 = makeRng(12345);
+  const r2 = makeRng(12345);
+  const seq1 = [r1(), r1.int(100), r1.range(10, 20), r1.pick(['a', 'b', 'c'])];
+  const seq2 = [r2(), r2.int(100), r2.range(10, 20), r2.pick(['a', 'b', 'c'])];
+  ok('same seed -> same sequence', JSON.stringify(seq1) === JSON.stringify(seq2));
 
-function load(file) {
-  const code = fs.readFileSync(path.join(__dirname, "..", file), "utf8");
-  const wrap = code + "\n\nglobalThis.__exports = globalThis.__exports || {};\ntry { globalThis.__exports.Sounds = Sounds; } catch (e) {}\ntry { globalThis.__exports.Games = Games; } catch (e) {}\n";
-  vm.runInContext(wrap, ctx, { filename: file });
-}
+  const r3 = makeRng(12345);
+  const stateBefore = r3.getState();
+  r3();
+  r3.setState(stateBefore);
+  ok('setState restores determinism', r3() === seq1[0]);
 
-load("version.js");
-load("sounds.js");
-load("games.js");
-load("games-extra.js");
+  ok('seedFrom is deterministic', seedFrom('2026-07-05') === seedFrom('2026-07-05'));
+  ok('seedFrom differs by input', seedFrom('2026-07-05') !== seedFrom('2026-07-06'));
 
-const G = ctx.__exports.Games;
-ok("Games exposed", !!G);
-if (!G) { console.log("Cannot continue without Games"); process.exit(1); }
+  // === recorder ===
+  console.log('--- recorder ---');
+  const rec = createRecorder();
+  const held = Object.fromEntries(BTN.map((k) => [k, false]));
+  held.right = true;
+  rec.record(0, { held });
+  held.right = false; held.down = true;
+  rec.record(5, { held });
+  const tape = rec.export(999);
+  ok('recorder exports seed', tape.seed === 999);
+  ok('recorder coalesces duplicate frames', tape.frames.length === 2);
+  ok('recorder export includes maxTicks', tape.maxTicks === 6);
 
-// safeEval
-console.log("--- safeEval ---");
-ok("safeEval exists", typeof G.safeEval === "function");
-const cases = [
-  ["1+1", 2],
-  ["2*3+4", 10],
-  ["(1+2)*3", 9],
-  ["10/4", 2.5],
-  ["100-50-25", 25],
-  ["1.5+2.5", 4],
-  ["-5+10", 5],
-  ["(2+3)*(4-1)", 15],
-  ["-(2+3)*2", -10]
-];
-for (const [expr, expected] of cases) {
-  let got;
-  try { got = G.safeEval(expr); } catch (e) { got = "ERR: " + e.message; }
-  ok("safeEval(" + expr + ") = " + expected, got === expected, "got " + got);
-}
-const badCases = ["", "abc", "1++", "(1+2", "1+)", "console.log(1)", "1;2", "1+1; alert(1)", "function(){}"];
-for (const expr of badCases) {
-  let threw = false;
-  try { G.safeEval(expr); } catch (e) { threw = true; }
-  ok("safeEval rejects " + JSON.stringify(expr), threw);
-}
+  // === encodeFrames / decodeFrames ===
+  console.log('--- encode/decode ---');
+  const roundFrames = [
+    { tick: 0, held: Object.fromEntries(BTN.map((k) => [k, k === 'right'])) },
+    { tick: 5, held: Object.fromEntries(BTN.map((k) => [k, k === 'right' || k === 'a'])) },
+    { tick: 6, held: Object.fromEntries(BTN.map((k) => [k, false])) }
+  ];
+  const enc = encodeFrames(roundFrames);
+  ok('encodeFrames produces non-empty string', enc.length > 0);
+  ok('encodeFrames is URL-safe', !/[+=/]/.test(enc));
+  const dec = decodeFrames(enc);
+  ok('decodeFrames round-trips length', dec.length === roundFrames.length);
+  ok('decodeFrames round-trips ticks', JSON.stringify(dec.map(f => f.tick)) === JSON.stringify(roundFrames.map(f => f.tick)));
+  ok('decodeFrames round-trips held', JSON.stringify(dec.map(f => f.held)) === JSON.stringify(roundFrames.map(f => f.held)));
 
-// loop
-console.log("--- loop ---");
-ok("Games.loop exists", typeof G.loop === "function");
-const stop1 = G.loop(() => {}, 60);
-ok("loop returns cleanup", typeof stop1 === "function");
-stop1();
-ok("loop cleanup is idempotent", true);
+  const allButtons = Object.fromEntries(BTN.map((k) => [k, true]));
+  const full = [{ tick: 0, held: allButtons }];
+  ok('all buttons mask round-trip', JSON.stringify(decodeFrames(encodeFrames(full))) === JSON.stringify(full));
 
-// tickLoop
-console.log("--- tickLoop ---");
-ok("Games.tickLoop exists", typeof G.tickLoop === "function");
-const stop2 = G.tickLoop(() => {}, 50);
-ok("tickLoop returns cleanup", typeof stop2 === "function");
-stop2();
+  // === hashState ===
+  console.log('--- hashState ---');
+  const h1 = hashState({ a: 1, b: [2, 3] });
+  const h2 = hashState({ a: 1, b: [2, 3] });
+  const h3 = hashState({ a: 1, b: [2, 4] });
+  ok('hashState deterministic', h1 === h2);
+  ok('hashState sensitive', h1 !== h3);
 
-// Test that loop actually fires
-console.log("--- loop runs ---");
-let ticks = 0;
-let loopStop = null;
-const stop3 = G.loop((t) => { ticks++; if (ticks >= 3 && loopStop) loopStop(); }, 0);
-loopStop = stop3;
-const start = Date.now();
-function checkTicks() {
-  if (ticks >= 3 || Date.now() - start > 2000) {
-    try { stop3(); } catch (e) {}
-    ok("loop tick callback fires (got " + ticks + ")", ticks >= 3);
-  } else {
-    setTimeout(checkTicks, 30);
+  // === draw.js ===
+  console.log('--- draw ---');
+  ok('pulse is deterministic', pulse(5, 2, 0.3, 1) === pulse(5, 2, 0.3, 1));
+  ok('pulse amplitude bounded', Math.abs(pulse(7, 3, 0.3, 0)) <= 3);
+
+  function makeFakeCtx() {
+    const calls = [];
+    const log = (m, ...args) => calls.push({ method: m, args });
+    return {
+      calls,
+      save: () => log('save'),
+      restore: () => log('restore'),
+      fillRect: (x, y, w, h) => log('fillRect', x, y, w, h),
+      fillText: (t, x, y) => log('fillText', t, x, y),
+      beginPath: () => log('beginPath'),
+      moveTo: (x, y) => log('moveTo', x, y),
+      lineTo: (x, y) => log('lineTo', x, y),
+      stroke: () => log('stroke'),
+    };
   }
-}
-checkTicks();
 
-// Test that tickLoop actually fires
-console.log("--- tickLoop runs ---");
-let tickLoopTicks = 0;
-let tStop = null;
-const stop4 = G.tickLoop(() => { tickLoopTicks++; if (tickLoopTicks >= 3 && tStop) tStop(); }, 20);
-tStop = stop4;
-setTimeout(() => {
-  try { stop4(); } catch (e) {}
-  ok("tickLoop callback fires (got " + tickLoopTicks + ")", tickLoopTicks >= 3);
-  console.log("\nUnit: " + passed + " pass / " + failed + " fail");
+  const fctx = makeFakeCtx();
+  flash(fctx, 400, 400, 0.5, '#ff0000');
+  ok('flash no-op when alpha <= 0', (() => { const c = makeFakeCtx(); flash(c, 100, 100, 0); return c.calls.length === 0; })());
+  ok('flash sets fillStyle and fills full rect', fctx.calls.some(c => c.method === 'fillRect' && c.args[2] === 400 && c.args[3] === 400));
+
+  const tctx = makeFakeCtx();
+  pixelText(tctx, 'HI', 10, 20, '#00ffff', 24);
+  ok('pixelText calls fillText', tctx.calls.some(c => c.method === 'fillText' && c.args[0] === 'HI'));
+
+  const cctx = makeFakeCtx();
+  centerText(cctx, 'CENTER', 200, 50, '#fff', 32);
+  ok('centerText aligns center', cctx.calls.some(c => c.method === 'fillText' && c.args[0] === 'CENTER'));
+
+  const gctx = makeFakeCtx();
+  strokeGrid(gctx, { x: 0, y: 0, cols: 2, rows: 2, cell: 10, color: '#fff' });
+  ok('strokeGrid calls stroke', gctx.calls.some(c => c.method === 'stroke'));
+  ok('strokeGrid draws vertical + horizontal lines', gctx.calls.filter(c => c.method === 'moveTo').length >= 6);
+
+  // === router ===
+  console.log('--- router ---');
+  const { parseHash } = await import(pathToFileURL(path.join(root, 'engine', 'router.js')).href);
+  ok('parseHash empty -> library', parseHash('').type === 'library');
+  ok('parseHash # -> library', parseHash('#').type === 'library');
+  ok('parseHash #view-library -> library', parseHash('#view-library').type === 'library');
+  ok('parseHash #/ -> library', parseHash('#/').type === 'library');
+  const snakeRoute = parseHash('#/snake');
+  ok('parseHash #/snake path', snakeRoute.type === 'route' && snakeRoute.path === 'snake');
+  const replayRoute = parseHash('#/replay?g=snake&s=123');
+  ok('parseHash #/replay path', replayRoute.type === 'route' && replayRoute.path === 'replay');
+  ok('parseHash #/replay params g', replayRoute.params.get('g') === 'snake');
+  ok('parseHash #/replay params s', replayRoute.params.get('s') === '123');
+  const dailyRoute = parseHash('#/daily');
+  ok('parseHash #/daily path', dailyRoute.type === 'route' && dailyRoute.path === 'daily');
+
+  // === replay with a tiny fake game ===
+  console.log('--- replay ---');
+  const fakeModule = {
+    default: {
+      tickHz: 10,
+      create(rng, api) {
+        let x = 0, over = false;
+        return {
+          events: [],
+          get over() { return over; },
+          update(input) {
+            if (input.held.right) x++;
+            if (input.pressed.a) x += 10;
+            if (x >= 20) over = true;
+          },
+          serialize() { return { x, over }; }
+        };
+      }
+    }
+  };
+  const fakeTape = {
+    seed: 1,
+    frames: [
+      { tick: 0, held: { right: true } },
+      { tick: 5, held: { right: true, a: true } },
+      { tick: 6, held: { right: true } }
+    ]
+  };
+  const final = replay(fakeModule, fakeTape, 100);
+  ok('replay returns serialized state', typeof final === 'object' && final.over === true);
+
+  console.log('\nUnit: ' + passed + ' pass / ' + failed + ' fail');
   process.exit(failed ? 1 : 0);
-}, 2000);
+}
+
+main().catch((e) => { console.error('Unit test crash:', e); process.exit(1); });

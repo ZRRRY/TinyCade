@@ -14,6 +14,8 @@ export default {
     icon: '🏓',
     cat: 'arcade',
     controls: '↑/↓ 移动左挡板 · 右挡板由电脑控制 · 21 分一局',
+    width: 480,
+    height: 320,
   },
   tickHz: 60,
 

@@ -5,6 +5,8 @@
    - 键盘：方向键移动/旋转、空格硬降、start 暂停（外壳处理）。
    ============================================================ */
 
+import { strokeGrid } from '../engine/draw.js';
+
 export default {
   meta: {
     id: 'tetris',
@@ -13,6 +15,8 @@ export default {
     icon: '🧱',
     cat: 'puzzle',
     controls: '←→ 移动 · ↑/X 旋转 · ↓ 加速 · 空格硬降 · P 暂停',
+    width: 300,
+    height: 600,
   },
   tickHz: 30, // 原 tickLoop 30ms ≈ 33Hz
 
@@ -128,9 +132,7 @@ export default {
       render(ctx) {
         ctx.fillStyle = '#0a0014'; ctx.fillRect(0, 0, W, H);
         // 网格
-        ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
-        for (let x = 0; x <= COLS; x++) { ctx.beginPath(); ctx.moveTo(x * SIZE, 0); ctx.lineTo(x * SIZE, H); ctx.stroke(); }
-        for (let y = 0; y <= ROWS; y++) { ctx.beginPath(); ctx.moveTo(0, y * SIZE); ctx.lineTo(W, y * SIZE); ctx.stroke(); }
+        strokeGrid(ctx, { x: 0, y: 0, cols: COLS, rows: ROWS, cell: SIZE, color: '#ffffff', alpha: 0.05 });
         // 已落方块
         for (let y = 0; y < ROWS; y++)
           for (let x = 0; x < COLS; x++)
@@ -147,7 +149,13 @@ export default {
         ctx.fillText(`LINES ${lines}`, 10, 10);
         ctx.fillText(`SCORE ${score}`, 10, 28);
       },
-      serialize() { return { score, lines, over }; },
+      serialize() {
+        return {
+          score, lines, over,
+          board: board.map((r) => r.join('')).join(''),
+          piece: current ? { x: current.x, y: current.y, shape: current.shape.map((r) => r.join('')).join('') } : null,
+        };
+      },
     };
 
     function drawCell(ctx, x, y, color) {

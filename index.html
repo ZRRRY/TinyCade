@@ -4,6 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TINYCADE - 复古小游戏合集</title>
+  <meta property="og:title" content="TINYCADE - 复古小游戏合集" />
+  <meta property="og:description" content="TINYCADE — 纯前端复古小游戏合集，111 款经典下载即玩。" />
+  <meta property="og:image" content="og/default.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="TINYCADE - 复古小游戏合集" />
+  <meta name="twitter:description" content="TINYCADE — 纯前端复古小游戏合集，111 款经典下载即玩。" />
+  <meta name="twitter:image" content="og/default.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <meta name="description" content="TINYCADE — 纯前端复古小游戏合集，111 款经典下载即玩。" />
   <meta name="theme-color" content="#0a0014" />
@@ -12,9 +22,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="preload" as="script" type="module" href="app.js" />
-  <link rel="preload" as="script" href="engine/engine.js" />
-  <link rel="preload" as="script" href="games/manifest.js" />
+  <!-- preload + SRI 由 build.js 在打包时注入, dev 视图依赖浏览器原生 <script type="module"> 直接加载 -->
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230a0014'/%3E%3Crect x='36' y='36' width='24' height='24' fill='%23ff00ff'/%3E%3Crect x='84' y='36' width='24' height='24' fill='%2300ffff'/%3E%3Crect x='132' y='36' width='24' height='24' fill='%23ffff00'/%3E%3C/g%3E%3C/svg%3E" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='3' y='3' width='2' height='2' fill='%23ff00ff'/%3E%3Crect x='7' y='3' width='2' height='2' fill='%2300ffff'/%3E%3Crect x='11' y='3' width='2' height='2' fill='%23ffff00'/%3E%3Crect x='3' y='7' width='2' height='2' fill='%2300ffff'/%3E%3Crect x='7' y='7' width='2' height='2' fill='%23ff00ff'/%3E%3Crect x='11' y='7' width='2' height='2' fill='%23ffff00'/%3E%3Crect x='3' y='11' width='2' height='2' fill='%23ffff00'/%3E%3Crect x='7' y='11' width='2' height='2' fill='%23ff00ff'/%3E%3Crect x='11' y='11' width='2' height='2' fill='%2300ffff'/%3E%3C/svg%3E" />
@@ -70,6 +78,7 @@
       <button type="button" class="filter-btn" data-cat="strategy">策略</button>
       <button type="button" class="filter-btn" data-cat="arcade">街机</button>
       <button type="button" class="filter-btn" data-cat="casual">休闲</button>
+      <button type="button" class="filter-btn daily-btn" id="daily-btn">📅 每日挑战</button>
       <label for="game-search" class="sr-only">搜索游戏</label>
     <input type="text" class="search-box" id="game-search" placeholder="搜索游戏..." aria-label="搜索游戏" />
     </section>

@@ -4,6 +4,8 @@
    - 决定论：固定初始解，洗牌 50 步用 rng。
    ============================================================ */
 
+import { centerText } from '../engine/draw.js';
+
 export default {
   meta: {
     id: 'slide3',
@@ -71,9 +73,7 @@ export default {
             ctx.fillStyle = '#00ffff';
             ctx.fillRect(ox + x * CELL + 4, oy + y * CELL + 4, CELL - 8, CELL - 8);
             ctx.fillStyle = '#000';
-            ctx.font = '40px VT323, monospace';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(board[y][x], ox + x * CELL + CELL / 2, oy + y * CELL + CELL / 2);
+            centerText(ctx, board[y][x], ox + x * CELL + CELL / 2, oy + y * CELL + CELL / 2 - 20, '#000', 40);
           }
         }
         ctx.fillStyle = '#00ffff';

@@ -1,0 +1,180 @@
+{
+  "game": "g2048",
+  "seed": 30002,
+  "maxTicks": 500,
+  "frames": [
+    {
+      "tick": 0,
+      "held": {}
+    },
+    {
+      "tick": 5,
+      "held": {
+        "a": true
+      }
+    },
+    {
+      "tick": 40,
+      "held": {
+        "start": true
+      }
+    },
+    {
+      "tick": 65,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 70,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 100,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 110,
+      "held": {
+        "left": true
+      }
+    },
+    {
+      "tick": 130,
+      "held": {
+        "left": false
+      }
+    },
+    {
+      "tick": 140,
+      "held": {
+        "a": true
+      }
+    },
+    {
+      "tick": 155,
+      "held": {
+        "select": true
+      }
+    },
+    {
+      "tick": 160,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 165,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 175,
+      "held": {
+        "select": true
+      }
+    },
+    {
+      "tick": 180,
+      "held": {
+        "b": true
+      }
+    },
+    {
+      "tick": 190,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 215,
+      "held": {
+        "a": true
+      }
+    },
+    {
+      "tick": 230,
+      "held": {
+        "select": true
+      }
+    },
+    {
+      "tick": 240,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 300,
+      "held": {
+        "start": true
+      }
+    },
+    {
+      "tick": 320,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 325,
+      "held": {
+        "up": false
+      }
+    },
+    {
+      "tick": 365,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 375,
+      "held": {
+        "start": true
+      }
+    },
+    {
+      "tick": 390,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 405,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 410,
+      "held": {
+        "a": true
+      }
+    },
+    {
+      "tick": 430,
+      "held": {
+        "up": true
+      }
+    },
+    {
+      "tick": 440,
+      "held": {
+        "down": true
+      }
+    },
+    {
+      "tick": 470,
+      "held": {
+        "start": true
+      }
+    }
+  ],
+  "expect": "fbb85d5b"
+}

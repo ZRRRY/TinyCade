@@ -5,6 +5,8 @@
      （演示型）。字母矩阵 + 单词列表保留原行为。
    ============================================================ */
 
+import { centerText } from '../engine/draw.js';
+
 export default {
   meta: {
     id: 'wordsearch',
@@ -80,10 +82,7 @@ export default {
         ctx.fillStyle = '#0a0014'; ctx.fillRect(0, 0, 400, 400);
         for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
           ctx.fillStyle = '#1a0033'; ctx.fillRect(ox + x * CELL, oy + y * CELL, CELL, CELL);
-          ctx.fillStyle = '#00ffff';
-          ctx.font = '20px VT323, monospace';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText(grid[y][x], ox + x * CELL + CELL / 2, oy + y * CELL + CELL / 2);
+          centerText(ctx, grid[y][x], ox + x * CELL + CELL / 2, oy + y * CELL + CELL / 2 - 10, '#00ffff', 20);
         }
         // found 列表
         ctx.fillStyle = '#00ff66';

@@ -5,6 +5,8 @@
      演示模式（本格内置 SOL 数组用于校验完成）。
    ============================================================ */
 
+import { centerText } from '../engine/draw.js';
+
 export default {
   meta: {
     id: 'kakuro',
@@ -79,10 +81,8 @@ export default {
           ctx.fillStyle = (x === cursor.x && y === cursor.y) ? '#ff0066' : '#1a0033';
           ctx.fillRect(px, py, CELL, CELL);
           if (board[y][x]) {
-            ctx.fillStyle = board[y][x] === SOL[y][x] ? '#00ff00' : '#ff0000';
-            ctx.font = '28px VT323, monospace';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(board[y][x], px + CELL / 2, py + CELL / 2);
+            const numColor = board[y][x] === SOL[y][x] ? '#00ff00' : '#ff0000';
+            centerText(ctx, board[y][x], px + CELL / 2, py + CELL / 2 - 14, numColor, 28);
           }
         }
         ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 2;

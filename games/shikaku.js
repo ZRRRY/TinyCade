@@ -5,6 +5,8 @@
      BTN.a 放置一个矩形覆盖从光标到下一行的方格（演示型逻辑）。
    ============================================================ */
 
+import { strokeGrid, centerText } from '../engine/draw.js';
+
 export default {
   meta: {
     id: 'shikaku',
@@ -46,17 +48,12 @@ export default {
         ctx.fillStyle = '#0a002a'; ctx.fillRect(0, 0, 400, 400);
         for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
           if (board[y][x]) {
-            ctx.fillStyle = (x === cursor.x && y === cursor.y) ? '#ffff00' : '#00ffff';
-            ctx.font = '24px VT323, monospace';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(board[y][x], ox + x * CELL + CELL / 2, oy + y * CELL + CELL / 2);
+            const numColor = (x === cursor.x && y === cursor.y) ? '#ffff00' : '#00ffff';
+            centerText(ctx, board[y][x], ox + x * CELL + CELL / 2, oy + y * CELL + CELL / 2 - 12, numColor, 24);
           }
         }
         ctx.strokeStyle = '#888'; ctx.lineWidth = 1;
-        for (let i = 0; i <= N; i++) {
-          ctx.beginPath(); ctx.moveTo(ox + i * CELL, oy); ctx.lineTo(ox + i * CELL, oy + W); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(ox, oy + i * CELL); ctx.lineTo(ox + W, oy + i * CELL); ctx.stroke();
-        }
+        strokeGrid(ctx, { x: ox, y: oy, cols: N, rows: N, cell: CELL, color: '#888' });
         // 光标框
         ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 2;
         ctx.strokeRect(ox + cursor.x * CELL, oy + cursor.y * CELL, CELL, CELL);

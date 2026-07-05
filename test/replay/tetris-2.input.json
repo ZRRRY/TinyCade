@@ -1,0 +1,194 @@
+[
+  {
+    "tick": 0,
+    "held": {
+      "down": true
+    }
+  },
+  {
+    "tick": 30,
+    "held": {
+      "up": true
+    }
+  },
+  {
+    "tick": 45,
+    "held": {
+      "a": true
+    }
+  },
+  {
+    "tick": 50,
+    "held": {
+      "up": true
+    }
+  },
+  {
+    "tick": 70,
+    "held": {
+      "up": false
+    }
+  },
+  {
+    "tick": 80,
+    "held": {
+      "select": true
+    }
+  },
+  {
+    "tick": 100,
+    "held": {
+      "down": true
+    }
+  },
+  {
+    "tick": 105,
+    "held": {
+      "up": true
+    }
+  },
+  {
+    "tick": 115,
+    "held": {
+      "up": false
+    }
+  },
+  {
+    "tick": 120,
+    "held": {
+      "a": true
+    }
+  },
+  {
+    "tick": 125,
+    "held": {
+      "a": false
+    }
+  },
+  {
+    "tick": 130,
+    "held": {
+      "down": true
+    }
+  },
+  {
+    "tick": 140,
+    "held": {
+      "b": true
+    }
+  },
+  {
+    "tick": 160,
+    "held": {
+      "right": true
+    }
+  },
+  {
+    "tick": 185,
+    "held": {
+      "left": true
+    }
+  },
+  {
+    "tick": 195,
+    "held": {
+      "start": true
+    }
+  },
+  {
+    "tick": 215,
+    "held": {
+      "b": true
+    }
+  },
+  {
+    "tick": 275,
+    "held": {
+      "select": true
+    }
+  },
+  {
+    "tick": 285,
+    "held": {
+      "a": true
+    }
+  },
+  {
+    "tick": 295,
+    "held": {
+      "down": true
+    }
+  },
+  {
+    "tick": 315,
+    "held": {
+      "left": true
+    }
+  },
+  {
+    "tick": 355,
+    "held": {
+      "right": true
+    }
+  },
+  {
+    "tick": 370,
+    "held": {
+      "start": true
+    }
+  },
+  {
+    "tick": 400,
+    "held": {
+      "b": true
+    }
+  },
+  {
+    "tick": 405,
+    "held": {
+      "start": true
+    }
+  },
+  {
+    "tick": 415,
+    "held": {
+      "b": true
+    }
+  },
+  {
+    "tick": 430,
+    "held": {
+      "select": true
+    }
+  },
+  {
+    "tick": 440,
+    "held": {
+      "up": true
+    }
+  },
+  {
+    "tick": 460,
+    "held": {
+      "select": true
+    }
+  },
+  {
+    "tick": 470,
+    "held": {
+      "a": true
+    }
+  },
+  {
+    "tick": 480,
+    "held": {
+      "a": false
+    }
+  },
+  {
+    "tick": 485,
+    "held": {
+      "left": true
+    }
+  }
+]

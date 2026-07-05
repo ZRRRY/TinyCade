@@ -24,6 +24,9 @@
     @html path *.html
     header @html Cache-Control "no-cache"
 
+    # SPA fallback: 先按 URL 取静态文件,失败则回落到 index.html。
+    @spa not file
+    rewrite @spa /index.html
+
     file_server
-    try_files {path} /index.html
 }

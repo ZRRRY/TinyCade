@@ -52,13 +52,18 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // 同源策略
-  // 跳过 SW 自己的 PRECACHE 路径（虽然这里不会再触发）
+  // API 与动态端点(/api/*, /healthz, /metrics) 不进运行时缓存,避免返回陈旧或敏感数据。
+  if (url.pathname.startsWith('/api/') || url.pathname === '/healthz' || url.pathname === '/metrics') return;
+  // 只缓存静态资源:扩展名命中可缓存列表(JS/CSS/HTML/JSON/manifest/woff2/svg/ico/png/jpg/gif/webp/wasm/map)。
+  // 避免缓存带 query 的动态 URL(如 ?record=1, ?token=xxx)。
+  const CACHEABLE_EXT = /\.(?:js|css|html|json|webmanifest|svg|ico|png|jpe?g|gif|webp|wasm|map|woff2?|ttf|otf)$/i;
+  const isCacheable = CACHEABLE_EXT.test(url.pathname);
   event.respondWith(
     caches.match(req).then((hit) => {
       if (hit) return hit;
       return fetch(req).then((res) => {
-        // 只缓存成功响应且为 GET
-        if (res && res.status === 200 && res.type === 'basic') {
+        // 只缓存:成功 + 同源 + 静态资源 + 无 query 参数的 GET 响应
+        if (res && res.status === 200 && res.type === 'basic' && isCacheable && url.search === '') {
           const copy = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});
         }

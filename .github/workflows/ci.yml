@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -25,6 +25,8 @@ jobs:
         run: npm run build
       - name: Lint
         run: npm run test:lint
+      - name: Replay tests
+        run: npm run test:replay
       - name: JS smoke test
         run: npm run test:js
       - name: Start server
@@ -52,7 +54,7 @@ jobs:
       - name: Check for known-bad patterns
         run: |
           set -e
-          ! grep -rEn "(\b|^)eval\(" games.js games-extra.js app.js sounds.js || (echo "eval() usage detected"; exit 1)
-          ! grep -rEn "new Function\(" games.js games-extra.js app.js sounds.js || (echo "new Function() usage detected"; exit 1)
+          ! grep -rEn "(\b|^)eval\(" app.js sounds.js || (echo "eval() usage detected"; exit 1)
+          ! grep -rEn "new Function\(" app.js sounds.js || (echo "new Function() usage detected"; exit 1)
           ! grep -rEn "innerHTML\s*=\s*\`" app.js || (echo "Suspicious innerHTML template literal in app.js"; exit 1)
           echo "Security patterns OK"

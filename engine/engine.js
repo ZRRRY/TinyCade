@@ -18,12 +18,14 @@ export function runGame(game, ctx, opts = {}) {
 
   function frame(t) {
     if (stopped) return;
-    if (document.hidden) { raf = requestAnimationFrame(frame); return; } // 后台暂停
+    if (document.hidden) { raf = requestAnimationFrame(frame); return; } // 后台暂停,acc 不累加
     acc += Math.min(t - last, 250); last = t;                            // 限制补帧上限
     while (acc >= tickInterval) {
       const snap = input.sample();
       if (recorder) recorder.record(tick, snap);
-      game.update(snap);
+      // 包裹 update 避免游戏 bug 摧毁整个帧循环; 错误记录到 console,继续下一 tick。
+      try { game.update(snap); } catch (e) { console.error('[engine] game.update threw', e); }
+      // 暂停由游戏/外壳拦截 (input.pressed.start 边沿)
       if (game.events && game.events.length) {                            // 音效派发
         if (!opts.headless && opts.onEvent) game.events.forEach(opts.onEvent);
         game.events.length = 0;

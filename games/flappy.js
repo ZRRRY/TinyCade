@@ -13,6 +13,8 @@ export default {
     icon: '🐦',
     cat: 'action',
     controls: '空格/点击/触屏 跳跃 · 撞到管道就重来',
+    width: 400,
+    height: 500,
   },
   tickHz: 60,
 

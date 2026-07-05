@@ -7,3 +7,6 @@ patch.js
 .vscode/
 dist/
 
+
+.mavis/
+.playwright-mcp/

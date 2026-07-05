@@ -77,7 +77,7 @@ async function main() {
     const dist = require('path').join(__dirname, '..', 'dist');
     const fsx = require('fs');
     const html = fsx.existsSync(dist + '/index.html') ? fsx.readFileSync(dist + '/index.html', 'utf8') : '';
-    const m = html.match(/(app|games|games-extra|sounds|style|version)\.[a-f0-9]{8}\.(js|css)/g) || [];
+    const m = html.match(/(app|sounds|style|version)\.[a-f0-9]{8}\.(js|css)/g) || [];
     const hashed = m.filter((v, i, a) => a.indexOf(v) === i).map(p => '/' + p).join(',');
     if (hashed) {
       const r = spawnSync('node', ['test/load-test.js', '--users', '50', '--requests', '20', '--base', 'http://localhost:8088'], {

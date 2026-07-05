@@ -135,6 +135,11 @@ function recordMetric(status, route, bytes) {
   metrics.requests++;
   metrics.bytes += bytes;
   metrics.byStatus[status] = (metrics.byStatus[status] || 0) + 1;
+  // 防止攻击者通过任意路径(GET /aaaa1, /aaaa2 ...)膨胀 metrics: byRoute 最多保留 200 个条目。
+  if (!Object.prototype.hasOwnProperty.call(metrics.byRoute, route)) {
+    const keys = Object.keys(metrics.byRoute);
+    if (keys.length >= 200) { delete metrics.byRoute[keys[0]]; }
+  }
   metrics.byRoute[route] = (metrics.byRoute[route] || 0) + 1;
 }
 
@@ -176,12 +181,15 @@ const server = http.createServer((req, res) => {
   if (shuttingDown) { res.writeHead(503, { 'Connection': 'close' }); res.end('Server shutting down'); return; }
   inflight++;
   const _startNs = process.hrtime.bigint();
+  // 用 done 标志防止 finish/close 重复触发导致 inflight 计数减两次(常见于 abort 场景)。
+  let done = false;
+  const doneOnce = () => { if (done) return; done = true; inflight = Math.max(0, inflight - 1); };
   res.on('finish', () => {
-    inflight = Math.max(0, inflight - 1);
+    doneOnce();
     const durMs = Number((process.hrtime.bigint() - _startNs) / 1000000n);
     pushAccess({ t: 'req', m: req.method, p: (req.url || '').split('?')[0], s: res.statusCode, ms: durMs, ip: (req.socket.remoteAddress || '').replace(/^::ffff:/, '') });
   });
-  res.on('close', () => { inflight = Math.max(0, inflight - 1); });
+  res.on('close', doneOnce);
   const ip = (req.socket.remoteAddress || '').replace(/^::ffff:/, '');
   if (!rateLimit(ip)) {
     recordMetric(429, '/ratelimit', 0);

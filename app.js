@@ -10,13 +10,14 @@
 
 import { MANIFEST, findById } from './games/manifest.js';
 import { runGame } from './engine/engine.js';
-import { createInput } from './engine/input.js';
-import { createRecorder } from './engine/recorder.js';
-import { makeRng } from './engine/rng.js';
+import { createInput, createDemoInput } from './engine/input.js';
+import { createRecorder, encodeFrames, decodeFrames } from './engine/recorder.js';
+import { makeRng, seedFrom } from './engine/rng.js';
+import { setupCanvas } from './engine/draw.js';
+import { parseHash, gameUrl, dailyUrl, replayUrl } from './engine/router.js';
 
 // 模块脚本对 window 全局可见；解构局部别名以便压缩。
 const Sounds = window.Sounds;
-const Games = () => window.Games;
 
 // ================== 状态 ==================
 const State = {
@@ -31,22 +32,62 @@ const State = {
   recorder: null,
   recSeed: 0,
   recordMode: false,       // ?record=1 标记
+  demo: false,             // 当前是否 demo 回放模式
+  gameOver: false,         // 当前游戏是否已结束
+  shareUrl: '',            // 游戏结束后生成的分享链接
   played: new Set(),
   totalScore: 0,
   cat: 'all',
   search: '',
   soundOn: true,
+  daily: false,            // 当前是否在每日挑战模式
+  dailyDate: '',           // 当前挑战日期 (YYYY-MM-DD)
 };
 
-// 固定步长 tick 频率（snake 10Hz；其他游戏先用 snake 的默认，迁移后跟随游戏自身声明的 tickHz）。
+// 固定步长 tick 频率（snake 10Hz；其他游戏迁移后跟随游戏自身声明的 tickHz）。
 const CANVAS_SIZE = 400;
 const FIXED_SEED = 123456789; // ?record=1 时固定，与 snake.tape.json 一致
+
+// ================== 每日挑战 ==================
+function todayString() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function dailyGameId() {
+  const date = todayString();
+  const seed = seedFrom(date);
+  const idx = seed % MANIFEST.length;
+  return MANIFEST[idx].id;
+}
+
+function dailyBestKey(id) {
+  return `daily-best-${id}-${todayString()}`;
+}
+
+function getDailyBest(id) {
+  try { return Number(localStorage.getItem(dailyBestKey(id))) || 0; } catch (e) { return 0; }
+}
+
+function setDailyBest(id, score) {
+  try { localStorage.setItem(dailyBestKey(id), String(score)); } catch (e) {}
+}
+
+async function launchDailyChallenge() {
+  const id = dailyGameId();
+  State.daily = true;
+  State.dailyDate = todayString();
+  try { Sounds.sfx.powerup(); } catch (e) {}
+  await launchGame(id);
+}
 
 // ================== 工具 ==================
 function safeEl(id) {
   try { return document.getElementById(id); } catch (e) { return null; }
 }
-function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 
 function load() {
   try {
@@ -71,8 +112,10 @@ function save() {
     }));
   } catch (e) {
     const quota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014);
-    if (quota && typeof status !== 'undefined' && status) {
-      status.textContent = '⚠ 本地存储已满，进度保存失败';
+    if (quota) {
+      // 用 a11y live region 提示用户,避免 console-only 静默失败
+      const live = document.getElementById('a11y-status');
+      if (live) live.textContent = '⚠ 本地存储已满,进度可能无法保存';
     }
   }
 }
@@ -137,6 +180,11 @@ function showView(name) {
       try { State.touchCleanup(); } catch (e) {}
       State.touchCleanup = null;
     }
+    State.daily = false;
+    State.dailyDate = '';
+    State.demo = false;
+    State.gameOver = false;
+    State.shareUrl = '';
   }
   if (name === 'about') updateAboutStats();
   requestAnimationFrame(() => {
@@ -180,13 +228,13 @@ function renderLibrary() {
     card.setAttribute('aria-label', g.name + ': ' + g.desc);
     card.addEventListener('click', () => {
       try { Sounds.sfx.select(); } catch (e) {}
-      launchGame(g.id);
+      location.hash = gameUrl(g.id);
     });
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         try { Sounds.sfx.select(); } catch (e) {}
-        launchGame(g.id);
+        location.hash = gameUrl(g.id);
       }
     });
     grid.appendChild(card);
@@ -215,34 +263,30 @@ function updateAboutStats() {
   }
 }
 
-// ================== 加载老 Games（fallback 用） ==================
-let legacyGamesPromise = null;
-function ensureLegacyGames() {
-  if (Games()) return Promise.resolve(Games());
-  if (legacyGamesPromise) return legacyGamesPromise;
-  legacyGamesPromise = new Promise((resolve, reject) => {
-    const loadOne = (src) => new Promise((res, rej) => {
-      const s = document.createElement('script');
-      s.src = src;
-      s.async = false;       // 顺序：games.js 必须在 games-extra.js 之前
-      s.onload = () => res();
-      s.onerror = () => rej(new Error('failed to load ' + src));
-      document.head.appendChild(s);
-    });
-    loadOne('games.js')
-      .then(() => loadOne('games-extra.js'))
-      .then(() => {
-        if (!window.Games) { reject(new Error('Games global not defined after legacy load')); return; }
-        resolve(window.Games);
-      })
-      .catch(reject);
-  });
-  return legacyGamesPromise;
+// ================== 分享回放链接 ==================
+const SHARE_URL_LIMIT = 4000;
+
+function generateShareUrl() {
+  if (!State.recorder || !State.currentGame) return '';
+  const tape = State.recorder.export(State.recSeed);
+  if (!tape.frames || !tape.frames.length) return '';
+  try {
+    const encoded = encodeFrames(tape.frames);
+    if (encoded.length > SHARE_URL_LIMIT) return '';
+    const url = new URL(location.href);
+    url.search = '';
+    url.hash = replayUrl(State.currentGame, State.recSeed, encoded);
+    return url.href;
+  } catch (e) {
+    return '';
+  }
 }
 
 // ================== 启动游戏 ==================
 function pickSeed() {
-  return State.recordMode ? FIXED_SEED : ((Math.random() * 0x100000000) >>> 0);
+  if (State.recordMode) return FIXED_SEED;
+  if (State.daily) return seedFrom(State.dailyDate);
+  return ((Math.random() * 0x100000000) >>> 0);
 }
 
 function showSpinner(stage) {
@@ -278,12 +322,12 @@ function showLoadError(stage, err) {
   back.className = 'pixel-btn';
   back.style.cssText = 'margin-top:8px;';
   back.textContent = '◀ 返回游戏库';
-  back.onclick = () => showView('library');
+  back.onclick = () => goLibrary();
   box.appendChild(back);
   stage.appendChild(box);
 }
 
-async function launchGame(id) {
+async function launchGame(id, opts = {}) {
   const meta = findById(id);
   if (!meta) return;
   // 清理上一局
@@ -293,6 +337,9 @@ async function launchGame(id) {
   State.paused = false;
   State.recording = false;
   State.recorder = null;
+  State.demo = !!opts.demo;
+  State.gameOver = false;
+  State.shareUrl = '';
   State.played.add(id);
   save();
 
@@ -309,10 +356,13 @@ async function launchGame(id) {
 
   // 舞台 + spinner
   const stage = document.getElementById('game-stage');
-  showSpinner(stage);
+  const spinner = showSpinner(stage);
   const hud = document.createElement('div');
   hud.className = 'game-hud';
-  hud.innerHTML = '<span class="hud-score">SCORE 0</span><span class="hud-info">' + (meta.cat || '').toUpperCase() + '</span>';
+  let hudInfo = (meta.cat || '').toUpperCase();
+  if (State.daily) hudInfo = `DAILY ${State.dailyDate} · BEST ${getDailyBest(id)}`;
+  if (State.demo) hudInfo = 'REPLAY';
+  hud.innerHTML = '<span class="hud-score">SCORE 0</span><span class="hud-info">' + hudInfo + '</span>';
   stage.appendChild(hud);
   const status = document.getElementById('game-status');
   status.textContent = '';
@@ -328,53 +378,65 @@ async function launchGame(id) {
     loadErr = e;
   }
 
-  if (mod && typeof mod.create === 'function') {
-    // 新引擎路径
-    try {
+  if (spinner && spinner.parentNode) { try { spinner.remove(); } catch (e) {} }
+  if (!mod || typeof mod.create !== 'function') {
+    console.error('launchGame failed', loadErr);
+    showLoadError(stage, loadErr || new Error('game module missing create()'));
+    State.currentInst = null;
+    State.currentInput = null;
+    showView('game');
+    return;
+  }
+
+  // 新引擎路径
+  try {
       const canvas = document.createElement('canvas');
-      canvas.width = CANVAS_SIZE;
-      canvas.height = CANVAS_SIZE;
-      canvas.style.width = Math.min(CANVAS_SIZE, 480) + 'px';
-      canvas.style.height = Math.min(CANVAS_SIZE, 480) + 'px';
-      const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = false;
+      const gameW = meta.width || CANVAS_SIZE;
+      const gameH = meta.height || CANVAS_SIZE;
+      const ctx = setupCanvas(canvas, gameW, gameH);
       stage.appendChild(canvas);
 
-      const input = createInput();
+      const input = State.demo ? createDemoInput(opts.frames || []) : createInput();
       State.currentInput = input;
 
-      const seed = pickSeed();
+      const seed = State.demo ? Number(opts.seed) : pickSeed();
       State.recSeed = seed;
       const rng = makeRng(seed);
-      const events = [];
       const inst = mod.create(rng, {
-        width: CANVAS_SIZE,
-        height: CANVAS_SIZE,
-        emit(name) { events.push(name); }
+        width: gameW,
+        height: gameH
       });
-      State.events = events;
-      inst.events = events;
+      const events = inst.events || [];
 
       // 包装 update：拦截 start 边沿 → 暂停/恢复；不破坏确定性（暂停时整个 tick 跳过）。
+      // demo 模式禁用暂停，保证回放与录制一致。
       State.paused = false;
       let prevStart = false;
       const origUpdate = inst.update.bind(inst);
       inst.update = (snap) => {
+        if (State.demo) {
+          origUpdate(snap);
+          return;
+        }
         const curStart = !!snap.held.start;
         if (curStart && !prevStart) {
           State.paused = !State.paused;
           announce(State.paused ? '已暂停' : '继续');
+          // 暂停:冻结输入 prev,防止暂停期间释放按键被误判为新按下;
+          // 恢复:解冻并把 prev 同步到当前 held。
+          if (State.paused) { try { input.freeze(); } catch (e) {} }
+          else { try { input.unfreeze(); } catch (e) {} }
         }
         prevStart = curStart;
-        if (State.paused) return; // 暂停期间不前进状态
+        if (State.paused) return; // 暂停期间不前进游戏状态
         origUpdate(snap);
       };
 
       State.currentInst = inst;
 
-      // 录制器
+      // 录制器：demo 模式不录；普通模式始终录，供分享回放。
       let recorder = null;
-      if (State.recordMode) {
+      if (!State.demo) {
         recorder = createRecorder();
         State.recorder = recorder;
         State.recording = true;
@@ -383,7 +445,21 @@ async function launchGame(id) {
       const stop = runGame(inst, ctx, {
         input,
         recorder,
-        onEvent: (s) => { try { Sounds.sfx[s]?.(); } catch (e) {} }
+        onEvent: (s) => {
+          try { Sounds.sfx[s]?.(); } catch (e) {}
+          if (State.daily && (s === 'gameover' || s === 'win')) {
+            try {
+              const st = inst.serialize ? inst.serialize() : {};
+              const score = Number(st.score ?? st.lines ?? st.moves ?? 0);
+              const best = getDailyBest(id);
+              if (score > best) setDailyBest(id, score);
+            } catch (e) {}
+          }
+          if (!State.demo && (s === 'gameover' || s === 'win')) {
+            State.gameOver = true;
+            State.shareUrl = generateShareUrl();
+          }
+        }
       });
       State.cleanup = () => {
         try { stop(); } catch (e) {}
@@ -401,35 +477,13 @@ async function launchGame(id) {
       return;
     } catch (e) {
       loadErr = e;
-      // 走 fallback
+      console.error('launchGame engine failed', e);
+      showLoadError(stage, e);
+      State.currentInst = null;
+      State.currentInput = null;
+      showView('game');
+      return;
     }
-  }
-
-  // 2) Fallback：旧 Games registry（lazy load games.js + games-extra.js）
-  try {
-    const Registry = await ensureLegacyGames();
-    const old = Registry.get(id);
-    if (!old || !old.factory) { throw new Error('game not found in legacy registry'); }
-    if (State.cleanup) { try { State.cleanup(); } catch (e) {} State.cleanup = null; }
-    stage.innerHTML = '';
-    stage.appendChild(hud);
-    const cleanup = old.factory(stage, hud, status);
-    State.cleanup = typeof cleanup === 'function' ? cleanup : null;
-    // 老游戏走的全局键盘监听器，旧路径继续持有（input.setBtn 不适用）。
-    // 触摸按钮为了兼容这里仍可注入，但只对老游戏无影响（已在 factory 内挂自己的键盘）。
-    injectControlButtons(id);
-    injectTouchControls();
-    try { Sounds.sfx.powerup(); } catch (e) {}
-    showView('game');
-    announce(meta.name + ' 已加载（兼容模式）');
-    setTimeout(renderLibrary, 100);
-  } catch (e2) {
-    console.error('launchGame failed', loadErr, e2);
-    showLoadError(stage, loadErr || e2);
-    State.currentInst = null;
-    State.currentInput = null;
-    showView('game');
-  }
 }
 
 // ================== 控制按钮（R 重开 / ESC 返回 / ?record 复制金样本） ==================
@@ -440,15 +494,45 @@ function injectControlButtons(id) {
 
   const restart = document.createElement('button');
   restart.className = 'pixel-btn primary';
-  restart.textContent = '🔄 重新开始 (R)';
+  restart.textContent = State.daily ? '📅 再来一次 (R)' : '🔄 重新开始 (R)';
   restart.onclick = () => { try { Sounds.sfx.start(); } catch (e) {} launchGame(id); };
   wrap.appendChild(restart);
 
   const back = document.createElement('button');
   back.className = 'pixel-btn';
   back.textContent = '◀ 返回 (ESC)';
-  back.onclick = () => { try { Sounds.sfx.beep(); } catch (e) {} showView('library'); };
+  back.onclick = () => goLibrary();
   wrap.appendChild(back);
+
+  // 分享回放链接（普通模式，demo 模式不显示）
+  if (!State.demo) {
+    const share = document.createElement('button');
+    share.className = 'pixel-btn';
+    share.textContent = '🔗 复制分享链接';
+    share.onclick = async () => {
+      const over = State.gameOver || (State.currentInst && State.currentInst.over);
+      const url = over ? (State.shareUrl || generateShareUrl()) : '';
+      if (!url) {
+        share.textContent = over ? '⚠ 本局太长，无法分享' : '⚠ 游戏结束后可用';
+        setTimeout(() => { share.textContent = '🔗 复制分享链接'; }, 1500);
+        return;
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = url; document.body.appendChild(ta);
+          ta.select(); document.execCommand('copy'); ta.remove();
+        }
+        share.textContent = '✓ 已复制';
+        setTimeout(() => { share.textContent = '🔗 复制分享链接'; }, 1500);
+      } catch (e) {
+        share.textContent = '⚠ 复制失败';
+      }
+    };
+    wrap.appendChild(share);
+  }
 
   // ?record=1 时显示复制按钮
   if (State.recordMode) {
@@ -518,7 +602,7 @@ function isTouchDevice() {
   return false;
 }
 
-// 安装单向触摸按钮（按下/松开直接写到 input.setBtn，不再伪造 KeyboardEvent）
+// 安装单向触摸按钮（按下/松开直接写到 input.setBtn）
 function attachTouchBtn(btn, btnName, momentary, onTap) {
   var active = false;
   function onStart(e) {
@@ -599,9 +683,7 @@ function injectTouchControls() {
   cleanups.push(attachTouchBtn(dpad.querySelector('.left'), 'left', false));
   cleanups.push(attachTouchBtn(dpad.querySelector('.right'), 'right', false));
 
-  // 中央 A：短暂触发 a 边沿（等价按键边沿）。仅在新模块游戏（State.currentInput 存在）
-  // 时有效；老游戏走物理键盘路径，触摸中央键不会触发键盘事件（设计如此：阶段 3 迁完老
-  // 游戏后再也不需要任何 KeyboardEvent 兜底）。
+  // 中央 A：短暂触发 a 边沿（等价按键边沿）
   var center = dpad.querySelector('.center');
   cleanups.push(attachTouchBtn(center, 'a', true));
 
@@ -611,8 +693,7 @@ function injectTouchControls() {
     launchGame(State.currentGame);
   }));
   cleanups.push(attachTouchBtn(row.querySelector('.act-back'), null, true, function () {
-    try { Sounds.sfx.beep(); } catch (e) {}
-    showView('library');
+    goLibrary();
   }));
 
   State.touchCleanup = function () {
@@ -637,14 +718,14 @@ function bindEvents() {
     const e = safeEl('back-btn');
     if (e) {
       e.addEventListener('click', () => {
-        try { Sounds.sfx.beep(); } catch (e) {}
-        showView('library');
+        goLibrary();
       });
     }
   }
 
   // 筛选
   document.querySelectorAll('.filter-btn').forEach(btn => {
+    if (btn.id === 'daily-btn') return;
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -653,6 +734,15 @@ function bindEvents() {
       renderLibrary();
     });
   });
+
+  // 每日挑战按钮
+  const dailyBtn = document.getElementById('daily-btn');
+  if (dailyBtn) {
+    dailyBtn.addEventListener('click', () => {
+      try { Sounds.sfx.select(); } catch (e) {}
+      location.hash = dailyUrl();
+    });
+  }
 
   // 搜索
   const searchBox = document.getElementById('game-search');
@@ -685,8 +775,7 @@ function bindEvents() {
   window.addEventListener('keydown', (e) => {
     if (State.view !== 'game') return;
     if (e.key === 'Escape') {
-      try { Sounds.sfx.beep(); } catch (e) {}
-      showView('library');
+      goLibrary();
       return;
     }
     if (e.target && e.target.tagName === 'INPUT') return;
@@ -698,16 +787,73 @@ function bindEvents() {
     }
   });
 
-  // 后台标签页暂停游戏循环，避免浪费 CPU/GPU
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && State.cleanup) {
-      try { State.cleanup(); } catch (e) {}
-    }
-  });
+  // 后台标签页时由 engine.js 内部根据 document.hidden 跳过 update/render,不需在这里
+  // 主动 cleanup —— 之前那版会在 hidden 时彻底停止 runGame,切回前台后游戏卡死。
 
   // 第一次点击激活音频上下文
   document.addEventListener('click', () => Sounds.getCtx(), { once: true });
   document.addEventListener('keydown', () => Sounds.getCtx(), { once: true });
+}
+
+// ================== 路由 ==================
+function goLibrary() {
+  try { Sounds.sfx.beep(); } catch (e) {}
+  location.hash = '#/';
+}
+
+function route() {
+  // 旧 ?game= 兼容重定向
+  try {
+    const params = new URLSearchParams(location.search);
+    const legacy = params.get('game');
+    if (legacy && findById(legacy)) {
+      // 用 replaceState 把 ?game= 重写成 /#/gameId，不刷新、不触发 hashchange
+      if (history.replaceState) {
+        history.replaceState(null, '', gameUrl(legacy));
+      }
+      State.daily = false;
+      launchGame(legacy);
+      return;
+    }
+  } catch (e) {}
+
+  const r = parseHash(location.hash);
+  if (r.type === 'library' || !r.path) {
+    if (State.view !== 'library') showView('library');
+    return;
+  }
+
+  if (r.path === 'daily') {
+    launchDailyChallenge();
+    return;
+  }
+
+  if (r.path === 'replay') {
+    const g = r.params.get('g');
+    const s = r.params.get('s');
+    const framesEncoded = r.params.get('frames');
+    if (g && findById(g) && s && framesEncoded) {
+      try {
+        const frames = decodeFrames(framesEncoded);
+        State.daily = false;
+        launchGame(g, { demo: true, seed: Number(s), frames });
+      } catch (e) {
+        console.error('replay decode failed', e);
+        showView('library');
+      }
+    } else {
+      showView('library');
+    }
+    return;
+  }
+
+  const meta = findById(r.path);
+  if (meta) {
+    State.daily = false;
+    launchGame(r.path);
+  } else {
+    showView('library');
+  }
 }
 
 // ================== 启动 ==================
@@ -725,13 +871,8 @@ function init() {
     bindEvents();
     renderLibrary();
     bootAnimation();
-    try {
-      var _qs = location.search.substring(1);
-      var _m = _qs.match(/(?:^|&)game=([a-z0-9_-]+)/i);
-      if (_m && findById(_m[1])) {
-        setTimeout(function () { launchGame(_m[1]); }, 200);
-      }
-    } catch (e) {}
+    window.addEventListener('hashchange', route);
+    route();
   } catch (e) {
     console.error('Init failed:', e);
     const root = document.getElementById('view-library') || document.body;
@@ -833,3 +974,8 @@ if (document.readyState === 'loading') {
 
 // 把 launchGame 暴露到 window 方便外部/调试调用。
 window.launchGame = launchGame;
+
+// debug=1 时暴露内部状态，便于端到端测试与调试（不暴露给普通用户）。
+if (new URL(location.href).searchParams.get('debug') === '1') {
+  window.__tinycadeState = State;
+}

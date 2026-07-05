@@ -1,0 +1,10 @@
+[
+  { "tick": 8, "held": { "up": true } },
+  { "tick": 9, "held": {} },
+  { "tick": 40, "held": { "right": true } },
+  { "tick": 41, "held": {} },
+  { "tick": 72, "held": { "down": true } },
+  { "tick": 73, "held": {} },
+  { "tick": 104, "held": { "left": true } },
+  { "tick": 105, "held": {} }
+]

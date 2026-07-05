@@ -4,6 +4,8 @@
    - 决定论：shuffle 用 rng；可解性检查保留。
    ============================================================ */
 
+import { centerText } from '../engine/draw.js';
+
 export default {
   meta: {
     id: 'fifteen',
@@ -100,10 +102,7 @@ export default {
             ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 2;
             ctx.strokeRect(px, py, CELL, CELL);
             if (v) {
-              ctx.fillStyle = '#fff';
-              ctx.font = '20px "Press Start 2P", monospace';
-              ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-              ctx.fillText(String(v), px + CELL / 2, py + CELL / 2);
+              centerText(ctx, String(v), px + CELL / 2, py + CELL / 2 - 10, '#fff', 20);
             }
           }
       },

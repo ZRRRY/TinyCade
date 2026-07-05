@@ -72,3 +72,21 @@ export function flash(ctx, w, h, alpha, color = '#fff') {
   ctx.fillRect(0, 0, w, h);
   ctx.restore();
 }
+
+// 初始化 canvas：按逻辑尺寸设置内部像素，按 CSS 等比缩放，处理 DPR。
+//   - width/height: 游戏逻辑尺寸（如 300x600、480x320）。
+//   - maxCssWidth:  在移动端限制最大显示宽度，默认 480。
+// 返回已设置 imageSmoothingEnabled=false 与 setTransform(dpr) 的 2D ctx。
+export function setupCanvas(canvas, width, height, maxCssWidth = 480) {
+  const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+  canvas.width = Math.floor(width * dpr);
+  canvas.height = Math.floor(height * dpr);
+  const cssW = Math.min(width, maxCssWidth);
+  const cssH = cssW * height / width;
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return ctx;
+}

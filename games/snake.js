@@ -6,6 +6,8 @@
    - 不发明新接口：meta / tickHz / create(rng, api) → { events, over, update, render, serialize }。
    ============================================================ */
 
+import { strokeGrid } from '../engine/draw.js';
+
 export default {
   meta: {
     id: 'snake',
@@ -14,6 +16,8 @@ export default {
     icon: '🐍',
     cat: 'arcade',
     controls: '方向键/WASD 移动 · P 暂停 · R 重开',
+    width: 400,
+    height: 400,
   },
   tickHz: 10, // 与旧版 tickLoop(…,100) 一致
 
@@ -67,11 +71,7 @@ export default {
         // 背景
         ctx.fillStyle = '#0a0014'; ctx.fillRect(0, 0, 400, 400);
         // 网格（视觉细节，保留旧版）
-        ctx.strokeStyle = 'rgba(0,255,255,0.06)';
-        for (let i = 0; i <= COLS; i++) {
-          ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, 400); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(400, i * CELL); ctx.stroke();
-        }
+        strokeGrid(ctx, { x: 0, y: 0, cols: COLS, rows: ROWS, cell: CELL, color: '#00ffff', alpha: 0.06 });
         // 食物（脉动改用 frame 计数，保持纯视觉 / 确定性）
         const pulse = Math.sin(frame / 3) * 2;
         ctx.fillStyle = '#ff00ff';

@@ -1,0 +1,120 @@
+[
+  {
+    "tick": 0,
+    "held": {}
+  },
+  {
+    "tick": 20,
+    "held": {
+      "up": true
+    }
+  },
+  {
+    "tick": 30,
+    "held": {
+      "b": true
+    }
+  },
+  {
+    "tick": 50,
+    "held": {
+      "right": true
+    }
+  },
+  {
+    "tick": 55,
+    "held": {
+      "right": false
+    }
+  },
+  {
+    "tick": 70,
+    "held": {
+      "right": true
+    }
+  },
+  {
+    "tick": 100,
+    "held": {
+      "left": true
+    }
+  },
+  {
+    "tick": 180,
+    "held": {
+      "start": true
+    }
+  },
+  {
+    "tick": 185,
+    "held": {
+      "a": true
+    }
+  },
+  {
+    "tick": 190,
+    "held": {
+      "a": false
+    }
+  },
+  {
+    "tick": 230,
+    "held": {
+      "down": true
+    }
+  },
+  {
+    "tick": 235,
+    "held": {
+      "b": true
+    }
+  },
+  {
+    "tick": 265,
+    "held": {
+      "start": true
+    }
+  },
+  {
+    "tick": 290,
+    "held": {
+      "down": true
+    }
+  },
+  {
+    "tick": 295,
+    "held": {
+      "up": true
+    }
+  },
+  {
+    "tick": 345,
+    "held": {
+      "up": false
+    }
+  },
+  {
+    "tick": 360,
+    "held": {
+      "select": true
+    }
+  },
+  {
+    "tick": 390,
+    "held": {
+      "down": true
+    }
+  },
+  {
+    "tick": 435,
+    "held": {
+      "up": true
+    }
+  },
+  {
+    "tick": 445,
+    "held": {
+      "start": true
+    }
+  }
+]

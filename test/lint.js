@@ -8,7 +8,7 @@ const ROOT = path.join(__dirname, '..');
 const files = {
   html:  ['index.html'],
   css:   ['style.css'],
-  js:    ['app.js', 'games.js', 'games-extra.js', 'sounds.js', 'version.js', 'server.js', 'build.js', 'sw.js']
+  js:    ['app.js', 'sounds.js', 'version.js', 'server.js', 'build.js', 'sw.js']
 };
 
 let failed = 0, passed = 0;
@@ -32,7 +32,9 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ok('html 含 main landmark', /<main[^>]+aria-labelledby/.test(html));
   ok('html 含 role=list', /role="list"/.test(html));
   ok('html 含 noscript 兜底', /<noscript>/.test(html));
-  ok('html 所有 script 带 defer 或 src', /<script(?![^>]*defer)(?![^>]*src=)/.test(html) === false);
+  // 先剔除 HTML 注释,避免注释中描述的 <script> 文本触发误报。
+  const htmlNoComment = html.replace(/<!--[\s\S]*?-->/g, '');
+  ok('html 所有 script 带 defer 或 src', /<script(?![^>]*defer)(?![^>]*src=)/.test(htmlNoComment) === false);
   ok('html 不包含 inline script（无 defer 且无 src）', /<script>(?![\s\S]*document\.|\s*<)/.test(html) === false || !/<script>(?!\s*<\/)/.test(html));
   ok('html 不引入 google ads', !/googletagmanager|google-analytics|adsbygoogle/.test(html));
   ok('html 不使用 document.write', !/document\.write/.test(html));
@@ -67,10 +69,15 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ok('app.js 含错误边界', /try\s*{[\s\S]*?init\(\)/.test(app) || /try[\s\S]{0,400}init\(\)/.test(app));
   ok('app.js 使用 textContent', /textContent/.test(app));
   ok('app.js 不使用 innerHTML 拼接模板', !/innerHTML\s*=\s*\`/.test(app));
-  ok('app.js 含 visibilitychange 处理', /visibilitychange/.test(app));
+  // visibilitychange 后台暂停由 engine.js 内部 document.hidden 跳过帧完成,
+  // app.js 不必再监听(监听了反而会触发 stop() 永久终止)。
+  const badVis = /addEventListener\([\'\"]visibilitychange[\'\"][\s\S]{0,300}?State\.cleanup\s*\(/.test(app);
+  ok('app.js 不再有破坏性 visibilitychange 清理', !badVis);
   ok('app.js 注册 SW', /serviceWorker/.test(app));
   ok('app.js 不再用 createKeyDispatcher（触摸不再伪造键盘）', !/createKeyDispatcher/.test(app));
-  ok('app.js 不再直接 new KeyboardEvent（触摸不再伪造键盘）', !/new\s+KeyboardEvent/.test(app));
+  // 阶段 3 结束后已删除老游戏 fallback 路径, app.js 不再派发 KeyboardEvent。
+  const keb = (app.match(/new\s+KeyboardEvent/g) || []).length;
+  ok('app.js 不再为老游戏 fallback 派发 KeyboardEvent (==0 处)', keb === 0, 'count=' + keb);
 
   for (const f of files.js) {
     const s = read(f);
@@ -83,11 +90,6 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   ok('server.js 路径检查', /path\.resolve[\s\S]+path\.sep/.test(server));
   ok('server.js CSP', /Content-Security-Policy/.test(server));
   ok('server.js rate limit', /rateLimit/.test(server));
-
-  const games = read('games.js');
-  const extra = read('games-extra.js');
-  const totalDefines = (games.match(/define\(/g) || []).length + (extra.match(/define\(/g) || []).length;
-  ok('老游戏总数 >= 100', totalDefines >= 100, 'actual=' + totalDefines);
 
   const sw = read('sw.js');
   ok('sw.js 含世代 cache', /CACHE_NAME/.test(sw));
@@ -117,12 +119,23 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
   } catch (e) {
     ok('games/ 目录可读', false, e && e.message);
   }
-  // 提取每个游戏的 update(...) 段，再在段内做禁词检查。
+  // 提取每个游戏的 update(...) 段：基于花括号匹配(遇 render/serialize/over 边界或 } 结束)，
+  // 不依赖缩进,避免被内层 if/for 的 4 空格 "  " 闭合花括号过早截断。
   function extractUpdateBlock(src) {
-    // 找 render(...) 之前的第一个完整 update 函数体。
-    const m = src.match(/update\s*\([^)]*\)\s*\{([\s\S]*?)\n\s{4}\}/);
-    if (m) return m[1];
-    return src; // 兜底：未匹配则全文件检查
+    // 兼容 update(input)/update(input_)/update(snap) 等参数命名。
+    const m = src.match(/update\s*\(\s*([A-Za-z_$][\w$]*)\s*\)\s*\{/);
+    if (!m) return src;
+    const i = m.index;
+    if (i < 0) return src;
+    const start = src.indexOf("{", i);
+    if (start < 0) return src;
+    let depth = 0;
+    for (let j = start; j < src.length; j++) {
+      const ch = src[j];
+      if (ch === "{") depth++;
+      else if (ch === "}") { depth--; if (depth === 0) return src.substring(start + 1, j); }
+    }
+    return src;
   }
   for (const f of gameFiles) {
     const rel = 'games/' + f;

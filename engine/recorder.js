@@ -11,14 +11,51 @@ import { BTN } from './input.js';
 export function createRecorder() {
   const frames = []; // [{tick, held}]
   let lastKey = '';
+  let maxTick = -1;
   return {
     frames,
     record(tick, snap) {
+      if (tick > maxTick) maxTick = tick;
       const key = JSON.stringify(snap.held);
       if (key !== lastKey) { frames.push({ tick, held: snap.held }); lastKey = key; }
     },
-    export(seed) { return { seed, frames }; },
+    export(seed) { return { seed, frames, maxTicks: maxTick + 1 }; },
   };
+}
+
+// 按钮掩码：与 BTN 顺序对齐（up/down/left/right/a/b/start/select）
+function heldToMask(held) {
+  let m = 0;
+  for (let i = 0; i < BTN.length; i++) {
+    if (held[BTN[i]]) m |= 1 << i;
+  }
+  return m;
+}
+function maskToHeld(mask) {
+  const held = {};
+  for (let i = 0; i < BTN.length; i++) {
+    held[BTN[i]] = !!(mask & (1 << i));
+  }
+  return held;
+}
+
+/**
+ * 压缩录制帧为 URL-safe base64 字符串。
+ * 格式：JSON.stringify([[tick, mask], ...]) 后 base64（URL-safe，去 padding）。
+ */
+export function encodeFrames(frames) {
+  const arr = frames.map(f => [f.tick, heldToMask(f.held)]);
+  const b64 = btoa(JSON.stringify(arr));
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * 解压缩 encodeFrames 的结果，返回 [{tick, held}]。
+ */
+export function decodeFrames(str) {
+  const b64 = str.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((str.length + 3) % 4);
+  const arr = JSON.parse(atob(b64));
+  return arr.map(([tick, mask]) => ({ tick, held: maskToHeld(mask) }));
 }
 
 function allFalse() {

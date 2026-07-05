@@ -7,6 +7,31 @@
 // 逻辑按键，与物理键/触摸解耦
 export const BTN = ['up', 'down', 'left', 'right', 'a', 'b', 'start', 'select'];
 
+// 回放/demo 输入源：按录制帧逐 tick 注入 held/pressed，不监听真实输入。
+export function createDemoInput(frames) {
+  let fi = 0;
+  let held = Object.fromEntries(BTN.map((k) => [k, false]));
+  let prev = Object.fromEntries(BTN.map((k) => [k, false]));
+  let tick = 0;
+  return {
+    setBtn() {},
+    freeze() {},
+    unfreeze() {},
+    sample() {
+      while (fi < frames.length && frames[fi].tick === tick) {
+        held = { ...Object.fromEntries(BTN.map((k) => [k, false])), ...frames[fi].held };
+        fi++;
+      }
+      const pressed = {};
+      for (const k of BTN) pressed[k] = held[k] && !prev[k];
+      prev = held;
+      tick++;
+      return { held, pressed };
+    },
+    destroy() {}
+  };
+}
+
 export function createInput(target = window) {
   const held = Object.fromEntries(BTN.map((k) => [k, false]));
   const KEYMAP = {
@@ -24,14 +49,19 @@ export function createInput(target = window) {
   const setBtn = (btn, v) => { if (btn in held) held[btn] = !!v; };
 
   let prev = { ...held };
+  let frozen = false;
   return {
     setBtn,
+    // 暂停时冻结 sample: 仍生成快照但 prev 不变,恢复后边沿反映
+    // 真实状态变化(而非把暂停期间的释放误判为新的按下)。
+    freeze() { frozen = true; },
+    unfreeze() { frozen = false; prev = { ...held }; },
     // 引擎每 tick 调一次：返回本 tick 快照 + 边沿
     sample() {
       const cur = { ...held };
       const pressed = {};
       for (const k of BTN) pressed[k] = cur[k] && !prev[k];
-      prev = cur;
+      if (!frozen) prev = cur;
       return { held: cur, pressed };
     },
     // 回放时用录制值覆盖
