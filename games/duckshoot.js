@@ -13,6 +13,8 @@ export default {
     icon: '🦆',
     cat: 'arcade',
     controls: '鼠标点击飞行鸭子 · 不能掉地',
+    width: 480,
+    height: 360,
   },
   tickHz: 60,
 

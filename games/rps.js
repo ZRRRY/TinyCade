@@ -13,6 +13,8 @@ export default {
     icon: '✂️',
     cat: 'casual',
     controls: '← → 选 · BTN.a 出招 · BTN.b 重开',
+    width: 360,
+    height: 360,
   },
   tickHz: 10,
 

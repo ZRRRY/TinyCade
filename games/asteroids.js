@@ -13,6 +13,8 @@ export default {
     icon: '☄️',
     cat: 'arcade',
     controls: '←→ 旋转 · ↑ 推进 · 空格射击',
+    width: 480,
+    height: 480,
   },
   tickHz: 60,
 

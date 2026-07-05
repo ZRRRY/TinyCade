@@ -13,6 +13,8 @@ export default {
     icon: '🧱',
     cat: 'arcade',
     controls: '← → 移动挡板 · 空格发射球 · 不让球落地',
+    width: 480,
+    height: 480,
   },
   tickHz: 60,
 

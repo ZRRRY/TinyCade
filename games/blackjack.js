@@ -13,6 +13,8 @@ export default {
     icon: '🃏',
     cat: 'casual',
     controls: 'BTN.a 要牌 · BTN.b 停牌 · BTN.start 重开',
+    width: 360,
+    height: 480,
   },
   tickHz: 5,
 

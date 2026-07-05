@@ -13,6 +13,8 @@ export default {
     icon: '🏰',
     cat: 'action',
     controls: 'A/空格 放箭 · 限时 90 秒',
+    width: 480,
+    height: 360,
   },
   tickHz: 60,
 

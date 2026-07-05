@@ -13,6 +13,8 @@ export default {
     icon: '🪂',
     cat: 'action',
     controls: '← → 微调方向 · 持续下降',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

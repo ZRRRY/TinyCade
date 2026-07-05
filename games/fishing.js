@@ -11,6 +11,8 @@ export default {
     icon: '🎣',
     cat: 'casual',
     controls: 'BTN.a 提竿 · BTN.b 重开',
+    width: 360,
+    height: 480,
   },
   tickHz: 30,
 

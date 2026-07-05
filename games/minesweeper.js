@@ -13,6 +13,8 @@ export default {
     icon: '💣',
     cat: 'puzzle',
     controls: '左键翻开 · 右键标记 · R 重开',
+    width: 400,
+    height: 400,
   },
   tickHz: 10, // 逻辑很简单，慢一点省电
 

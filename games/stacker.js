@@ -13,6 +13,8 @@ export default {
     icon: '📚',
     cat: 'arcade',
     controls: '空格/点击 停止移动的方块',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

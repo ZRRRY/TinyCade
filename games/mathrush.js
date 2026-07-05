@@ -23,10 +23,12 @@ export default {
       const op = ['+', '-', '*'][rng.int(3)];
       const ans = op === '+' ? a + b : op === '-' ? a - b : a * b;
       const choices = [ans];
-      while (choices.length < 4) {
-        const v = ans + rng.range(-5, 6);
-        if (!choices.includes(v) && v >= 0) choices.push(v);
+      let safety = 0;
+      while (choices.length < 4 && safety++ < 100) {
+        const v = ans + rng.range(-10, 11);
+        if (!choices.includes(v)) choices.push(v);
       }
+      if (choices.length < 4) choices.push(ans + 100); // fallback
       // shuffle
       for (let i = choices.length - 1; i > 0; i--) {
         const j = rng.int(i + 1);

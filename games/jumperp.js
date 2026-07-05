@@ -11,6 +11,8 @@ export default {
     icon: '🦘',
     cat: 'casual',
     controls: 'BTN.left/right 选水平 · BTN.a 跳 · BTN.b 重开',
+    width: 360,
+    height: 200,
   },
   tickHz: 10,
 

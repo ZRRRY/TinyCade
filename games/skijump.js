@@ -13,6 +13,8 @@ export default {
     icon: '🎿',
     cat: 'arcade',
     controls: '按住蓄力 · 松开跳跃 · 飞行中 ←→ 调整',
+    width: 480,
+    height: 360,
   },
   tickHz: 60,
 

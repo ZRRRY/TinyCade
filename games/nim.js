@@ -12,6 +12,8 @@ export default {
     icon: '🪨',
     cat: 'strategy',
     controls: '← → 选堆 · BTN.a 取 1 颗 · BTN.b 重开',
+    width: 360,
+    height: 360,
   },
   tickHz: 8,
 

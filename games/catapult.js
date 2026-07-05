@@ -12,6 +12,8 @@ export default {
     icon: '🪨',
     cat: 'arcade',
     controls: '←→ 调角度 · ↑↓ 力度 · 空格发射',
+    width: 480,
+    height: 320,
   },
   tickHz: 60,
 

@@ -13,6 +13,8 @@ export default {
     icon: '💣',
     cat: 'action',
     controls: '← → 调整角度 · ↑ ↓ 调整力度 · 空格投',
+    width: 480,
+    height: 320,
   },
   tickHz: 30,
 

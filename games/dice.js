@@ -13,6 +13,8 @@ export default {
     icon: '🎲',
     cat: 'strategy',
     controls: 'BTN.a 投掷 · BTN.b 重开',
+    width: 360,
+    height: 360,
   },
   tickHz: 5,
 

@@ -60,7 +60,7 @@ export default {
           score += m.length * 10;
           api.emit('clear');
           m.forEach(([mx, my]) => {
-            for (let i = my; i >= 0; i--) board[i + 1][mx] = board[i][mx] || rng.int(GEMS.length);
+            for (let i = my; i >= 0 && i + 1 < N; i--) board[i + 1][mx] = board[i][mx] || rng.int(GEMS.length);
             board[0][mx] = rng.int(GEMS.length);
           });
           break;

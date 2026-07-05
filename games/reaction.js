@@ -13,6 +13,8 @@ export default {
     icon: '⚡',
     cat: 'casual',
     controls: 'BTN.a 当屏幕变绿立刻按 · 太早按失败 · BTN.b 重开',
+    width: 480,
+    height: 320,
   },
   tickHz: 30,
 

@@ -12,6 +12,8 @@ export default {
     icon: '🟢',
     cat: 'strategy',
     controls: '方向键移光标 · BTN.a 添加点 · BTN.select 撤销 · BTN.b 重开',
+    width: 360,
+    height: 360,
   },
   tickHz: 10,
 

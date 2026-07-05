@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    games/dotsboxes.js — 点格游戏（策略类）
    5x5. 随机开始玩家. 玩家方向键 + BTN.a 画线（AI 随机）.
    ============================================================ */
@@ -11,6 +11,8 @@ export default {
     icon: '⬛',
     cat: 'strategy',
     controls: '方向键移光标 · BTN.a 画线 · BTN.b 重开',
+    width: 300,
+    height: 300,
   },
   tickHz: 10,
 
@@ -24,7 +26,7 @@ export default {
       hLines = Array.from({ length: N + 1 }, () => Array(N).fill(0));
       vLines = Array.from({ length: N }, () => Array(N + 1).fill(0));
       boxes = Array.from({ length: N }, () => Array(N).fill(0));
-      turn = 1; scores = [0, 0]; cursor = { x: 0, y: 0, kind: 'h' }; // kind='h' or 'v'
+      turn = 1; scores = [0, 0]; cursor = { x: 0, y: 0, kind: 'h' }; over = false; // kind='h' or 'v'
     }
     function drawH(yy, xx) {
       hLines[yy][xx] = turn;

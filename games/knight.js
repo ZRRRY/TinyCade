@@ -13,6 +13,8 @@ export default {
     icon: '🛡️',
     cat: 'action',
     controls: '← → 移动 · 空格挥剑',
+    width: 480,
+    height: 320,
   },
   tickHz: 30,
 

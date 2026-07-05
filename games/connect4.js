@@ -26,8 +26,8 @@ export default {
       const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
       for (const [dx, dy] of dirs) {
         let count = 1;
-        for (let s = 1; s < 4 && r + s * dy < ROWS && c + s * dx < COLS && board[r + s * dy][c + s * dx] === board[r][c]; s++) count++;
-        for (let s = 1; s < 4 && r - s * dy >= 0 && c - s * dx >= 0 && board[r - s * dy][c - s * dx] === board[r][c]; s++) count++;
+        for (let s = 1; s < 4 && r + s * dy >= 0 && c + s * dx >= 0 && r + s * dy < ROWS && c + s * dx < COLS && board[r + s * dy][c + s * dx] === board[r][c]; s++) count++;
+        for (let s = 1; s < 4 && r - s * dy >= 0 && c - s * dx >= 0 && r - s * dy < ROWS && c - s * dx < COLS && board[r - s * dy][c - s * dx] === board[r][c]; s++) count++;
         if (count >= 4) return board[r][c];
       }
       return 0;

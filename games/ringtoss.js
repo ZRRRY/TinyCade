@@ -13,6 +13,8 @@ export default {
     icon: '🎯',
     cat: 'arcade',
     controls: '点击/空格 抛出圆圈 · 时机要准',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 
@@ -41,7 +43,7 @@ export default {
           if (ring.y > H) ring = null;
           else if (ring.y > 350) {
             for (const p of pegs) {
-              if (!p.hit && Math.abs(ring.x - p.x) < 30) { p.hit = true; score += 10; api.emit('win'); ring = null; }
+              if (!p.hit && Math.abs(ring.x - p.x) < 30) { p.hit = true; score += 10; api.emit('win'); ring = null; break; }
             }
           }
         }

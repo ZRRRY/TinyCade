@@ -13,6 +13,8 @@ export default {
     icon: '🐸',
     cat: 'arcade',
     controls: '方向键移动 · 避免被车撞和掉水里',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

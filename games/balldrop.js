@@ -13,6 +13,8 @@ export default {
     icon: '🔮',
     cat: 'arcade',
     controls: '←→ 移动 · 空格/点击 发射弹珠 · 落点决定得分',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

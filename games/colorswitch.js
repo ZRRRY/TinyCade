@@ -13,6 +13,8 @@ export default {
     icon: '🎨',
     cat: 'arcade',
     controls: '点击/空格 跳跃 · 颜色匹配才安全',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

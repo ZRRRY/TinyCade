@@ -13,6 +13,8 @@ export default {
     icon: '🏃',
     cat: 'action',
     controls: '空格/点击 跳跃 · 双击二段跳',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

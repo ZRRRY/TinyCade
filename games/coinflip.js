@@ -13,6 +13,8 @@ export default {
     icon: '🪙',
     cat: 'casual',
     controls: '← → 选 H/T · BTN.a 投 · BTN.b 重开',
+    width: 360,
+    height: 360,
   },
   tickHz: 10,
 

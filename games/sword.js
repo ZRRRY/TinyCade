@@ -13,6 +13,8 @@ export default {
     icon: '⚔️',
     cat: 'action',
     controls: '↑↓←→ 防御方向 · 空格反击 · 时机要准',
+    width: 480,
+    height: 320,
   },
   tickHz: 60,
 

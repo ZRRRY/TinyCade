@@ -13,6 +13,8 @@ export default {
     icon: '🍉',
     cat: 'arcade',
     controls: '鼠标/触屏挥动切水果 · 别切炸弹',
+    width: 480,
+    height: 320,
   },
   tickHz: 60,
 

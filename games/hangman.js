@@ -15,6 +15,8 @@ export default {
     icon: '🪢',
     cat: 'puzzle',
     controls: '点击字母猜 · 6 次机会',
+    width: 480,
+    height: 320,
   },
   tickHz: 6, // 不需要快
 

@@ -13,6 +13,8 @@ export default {
     icon: '🧭',
     cat: 'arcade',
     controls: '方向键/WASD 倾斜 · 球到金色方块',
+    width: 360,
+    height: 360,
   },
   tickHz: 60,
 

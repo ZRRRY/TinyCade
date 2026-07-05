@@ -65,6 +65,7 @@ export default {
       }
       cursor = { x: 0, y: 0 };
       fillIdx = 1; // 模拟"按 a 自动填"的下一个数字
+      over = false;
     }
     function checkComplete() {
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (puzzle[y][x] !== solution[y][x]) return false;

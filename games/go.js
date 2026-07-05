@@ -22,7 +22,7 @@ export default {
 
     function reset() {
       board = Array.from({ length: N }, () => Array(N).fill(0));
-      turn = 1; captures = [0, 0]; cursor = { x: Math.floor(N / 2), y: Math.floor(N / 2) };
+      turn = 1; captures = [0, 0]; cursor = { x: Math.floor(N / 2), y: Math.floor(N / 2) }; over = false;
     }
     function neighbors(x, y) {
       return [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]
@@ -58,6 +58,11 @@ export default {
       return true;
     }
 
+    function hasEmpty() {
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (!board[y][x]) return true;
+      return false;
+    }
+
     reset();
     const events = [];
     api.emit = (s) => events.push(s);
@@ -91,6 +96,7 @@ export default {
             } else { api.emit('deny'); }
           }
         }
+        if (!hasEmpty()) { over = true; api.emit('gameover'); }
         frame++;
       },
       render(ctx) {

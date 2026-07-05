@@ -13,6 +13,8 @@ export default {
     icon: '⛷️',
     cat: 'arcade',
     controls: '← → 转向 · 越久越快',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

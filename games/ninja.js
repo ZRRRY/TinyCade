@@ -13,6 +13,8 @@ export default {
     icon: '🥷',
     cat: 'action',
     controls: '↑/空格 跳跃 · ↓ 挥刀 · 砍飞镖',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

@@ -13,6 +13,8 @@ export default {
     icon: '🏃',
     cat: 'arcade',
     controls: '← → 切换车道 · ↑ 跳跃',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

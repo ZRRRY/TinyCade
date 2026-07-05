@@ -13,6 +13,8 @@ export default {
     icon: '⚡',
     cat: 'action',
     controls: '1/2/3/4 键 命中第 N 道 · 连击得分',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 

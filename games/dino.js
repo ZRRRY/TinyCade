@@ -13,6 +13,8 @@ export default {
     icon: '🦖',
     cat: 'arcade',
     controls: '空格/上箭头 跳跃 · 下蹲躲避飞行物',
+    width: 480,
+    height: 240,
   },
   tickHz: 60,
 

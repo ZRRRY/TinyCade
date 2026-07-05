@@ -13,6 +13,8 @@ export default {
     icon: '🚀',
     cat: 'action',
     controls: '空格/点击 推进 · 撞到刺就完',
+    width: 360,
+    height: 480,
   },
   tickHz: 60,
 
@@ -21,7 +23,7 @@ export default {
     let player, walls, score, over;
 
     function reset() {
-      player = { x: 60, y: 240, vy: 0 };
+      player = { x: 60, y: 240, vy: 0, thrust: false };
       walls = []; score = 0; over = false;
     }
 
@@ -37,6 +39,7 @@ export default {
       events,
       get over() { return over; },
       update(input) {
+        player.thrust = input.held.a;
         // 推进：a held
         if (input.held.a) player.vy = -5; else player.vy += 0.4;
         player.y += player.vy;
@@ -62,7 +65,7 @@ export default {
           ctx.fillRect(w.x, w.top + w.gap, 30, H);
         });
         ctx.fillStyle = '#ffaa00'; ctx.fillRect(player.x - 4, player.y - 8, 8, 16);
-        if (input && input.held && input.held.a) {
+        if (player.thrust) {
           ctx.fillStyle = '#ff8800';
           for (let i = 0; i < 3; i++) ctx.fillRect(player.x - 4, player.y + 8 + i * 4, 8, 2);
         }

@@ -13,6 +13,8 @@ export default {
     icon: '🏹',
     cat: 'action',
     controls: 'A/空格 射击 · 限时 60 秒',
+    width: 480,
+    height: 320,
   },
   tickHz: 60,
 

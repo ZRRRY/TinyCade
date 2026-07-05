@@ -13,6 +13,8 @@ export default {
     icon: '👾',
     cat: 'arcade',
     controls: '← → 移动 · 空格射击 · P 暂停',
+    width: 480,
+    height: 480,
   },
   tickHz: 60,
 

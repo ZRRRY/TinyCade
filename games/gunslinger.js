@@ -13,6 +13,8 @@ export default {
     icon: '🤠',
     cat: 'action',
     controls: '等 BANG! 显示后立刻按 A/空格',
+    width: 480,
+    height: 320,
   },
   tickHz: 60,
 
