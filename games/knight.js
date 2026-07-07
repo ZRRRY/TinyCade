@@ -20,12 +20,12 @@ export default {
 
   create(rng, api) {
     const W = 480, H = 320, GROUND = 280;
-    let knight, dragon, fires, score, slash, over;
+    let knight, dragon, fires, score, slash, slashHit, over;
 
     function reset() {
       knight = { x: 100 };
       dragon = { x: 380, y: 100, hp: 5 };
-      fires = []; score = 0; slash = 0; over = false;
+      fires = []; score = 0; slash = 0; slashHit = false; over = false;
     }
 
     reset();
@@ -40,13 +40,13 @@ export default {
         // 移动：方向键 held
         if (input.held.left) knight.x -= 20;
         if (input.held.right) knight.x += 20;
-        knight.x = Math.max(20, Math.min(200, knight.x));
+        knight.x = Math.max(20, Math.min(420, knight.x));
 
         // 挥剑
-        if (input.pressed.a) { slash = 10; api.emit('swoosh'); }
+        if (input.pressed.a) { slash = 10; slashHit = false; api.emit('swoosh'); }
 
         // 火焰生成
-        if (rng() < 0.02) fires.push({ x: dragon.x - 20, y: dragon.y + 30, vx: -3 - rng.range(0, 1), vy: 0 });
+        if (rng() < 0.02) fires.push({ x: dragon.x - 20, y: GROUND - 20, vx: -3 - rng.range(0, 1), vy: 0 });
         fires.forEach((f) => { f.x += f.vx; });
         fires = fires.filter((f) => f.x > -20);
 
@@ -60,7 +60,8 @@ export default {
         if (dead) { over = true; return; }
 
         // 斩龙
-        if (slash > 0 && Math.abs(knight.x + 30 - dragon.x) < 40) {
+        if (slash > 0 && !slashHit && Math.abs(knight.x + 30 - dragon.x) < 40) {
+          slashHit = true;
           dragon.hp--; score += 10; api.emit('hit');
           if (dragon.hp <= 0) { over = true; api.emit('win'); return; }
         }

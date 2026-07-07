@@ -72,7 +72,7 @@ export default {
         enemies.forEach((e) => {
           if (Math.abs(e.x - ship.x) < 16 && Math.abs(e.y - ship.y) < 16) dead = true;
         });
-        if (dead) { api.emit('gameover'); reset(); return; }
+        if (dead) { over = true; api.emit('gameover'); return; }
       },
       render(ctx) {
         ctx.fillStyle = '#000018'; ctx.fillRect(0, 0, W, H);

@@ -20,26 +20,26 @@ export default {
     let frogs, moves, over, win, tickFrame;
 
     function reset() {
-      frogs = [null, null, null, 'g', 'r', 'r', 'r'];
+      frogs = ['g', 'g', 'g', null, 'r', 'r', 'r'];
       moves = 0; over = false; win = false; tickFrame = 0;
     }
     function tryAutoMove() {
-      // 优先走 forward：g 向左，r 向右
+      // 优先走 forward：g 向右，r 向左
       for (let i = 0; i < N; i++) {
         if (frogs[i] === 'g') {
-          if (i - 1 >= 0 && !frogs[i - 1]) { frogs[i - 1] = 'g'; frogs[i] = null; moves++; api.emit('move'); return true; }
-          if (i - 2 >= 0 && !frogs[i - 2] && frogs[i - 1] === 'r') { frogs[i - 2] = 'g'; frogs[i] = null; moves++; api.emit('move'); return true; }
+          if (i + 1 < N && !frogs[i + 1]) { frogs[i + 1] = 'g'; frogs[i] = null; moves++; api.emit('move'); return true; }
+          if (i + 2 < N && !frogs[i + 2] && frogs[i + 1] === 'r') { frogs[i + 2] = 'g'; frogs[i] = null; moves++; api.emit('move'); return true; }
         }
         if (frogs[i] === 'r') {
-          if (i + 1 < N && !frogs[i + 1]) { frogs[i + 1] = 'r'; frogs[i] = null; moves++; api.emit('move'); return true; }
-          if (i + 2 < N && !frogs[i + 2] && frogs[i + 1] === 'g') { frogs[i + 2] = 'r'; frogs[i] = null; moves++; api.emit('move'); return true; }
+          if (i - 1 >= 0 && !frogs[i - 1]) { frogs[i - 1] = 'r'; frogs[i] = null; moves++; api.emit('move'); return true; }
+          if (i - 2 >= 0 && !frogs[i - 2] && frogs[i - 1] === 'g') { frogs[i - 2] = 'r'; frogs[i] = null; moves++; api.emit('move'); return true; }
         }
       }
       return false;
     }
     function checkWin() {
-      return frogs[3] === 'r' && frogs[4] === 'r' && frogs[5] === 'r' && frogs[6] === 'g'
-        && frogs.slice(0, 3).every((f) => !f || f === 'r');
+      return frogs[0] === 'r' && frogs[1] === 'r' && frogs[2] === 'r' && frogs[3] === null
+        && frogs[4] === 'g' && frogs[5] === 'g' && frogs[6] === 'g';
     }
     reset();
     const events = [];

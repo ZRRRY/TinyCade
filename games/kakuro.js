@@ -14,7 +14,7 @@ export default {
     desc: '填数字使横纵之和等于提示',
     icon: '🧮',
     cat: 'puzzle',
-    controls: '点击格子 · 输入 1-9 · 不能重复',
+    controls: '方向键移动光标 · BTN.a 循环填入 1-9 · BTN.b 清除',
   },
   tickHz: 10,
 
@@ -37,7 +37,7 @@ export default {
     function check() {
       let ok = true;
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++)
-        if (board[y][x] && board[y][x] !== SOL[y][x]) ok = false;
+        if (board[y][x] !== SOL[y][x]) ok = false;
       if (ok) { win = true; over = true; api.emit('win'); }
     }
     function fillNextDigit() {

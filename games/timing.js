@@ -34,8 +34,11 @@ export default {
         angle += 0.05;
         if (p.a) {
           const greenA = -Math.PI / 2;
-          const diff = Math.abs(angle - greenA) % (Math.PI * 2);
-          if (diff < 0.3 || Math.PI * 2 - diff < 0.3) { score += 10; api.emit('win'); }
+          const arc = 0.3;
+          const center = greenA + arc / 2;
+          let diff = Math.abs(angle - center) % (Math.PI * 2);
+          if (diff > Math.PI) diff = Math.PI * 2 - diff;
+          if (diff <= arc / 2) { score += 10; api.emit('win'); }
           else api.emit('deny');
         }
         frame++;

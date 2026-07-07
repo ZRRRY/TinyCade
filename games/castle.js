@@ -36,7 +36,7 @@ export default {
           // [no-mouse-yet] 简化为：每次射击有概率命中城堡弱点（固定位置）
           if (rng() < 0.5) {
             castle.hp--; score += 5; api.emit('hit');
-            if (castle.hp <= 0) { api.emit('win'); reset(); }
+            if (castle.hp <= 0) { over = true; api.emit('win'); return; }
           }
         }
       });
@@ -50,12 +50,13 @@ export default {
       events,
       get over() { return over; },
       update(input) {
+        if (over) return;
         archers.forEach((a) => {
           a.vy += 0.4; a.y += a.vy;
           if (a.y > 350) { a.y = 350; a.vy = 0; a.alive = true; }
         });
         time -= 1 / 60;
-        if (time <= 0) { api.emit('gameover'); reset(); return; }
+        if (time <= 0) { over = true; api.emit('gameover'); return; }
         if (input.pressed.a) shoot();
       },
       render(ctx) {

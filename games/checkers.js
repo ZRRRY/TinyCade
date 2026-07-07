@@ -108,6 +108,9 @@ export default {
           if (blackAutoStep()) {
             if (isOver()) { over = true; api.emit('gameover'); return; }
             turn = 'w';
+          } else {
+            // 无合法步可走的时候判黑方负
+            over = true; win = 'w'; api.emit('win');
           }
         }
       },

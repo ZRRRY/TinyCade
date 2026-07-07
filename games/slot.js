@@ -32,6 +32,7 @@ export default {
       get over() { return score <= 0; },
       update(input) {
         const p = input.pressed;
+        if (score <= 0) return;
         if (p.b) { reset(); return; }
         if (p.a && spinUntil === 0) {
           spinUntil = frame + 30; // 转 3 秒

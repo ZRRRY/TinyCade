@@ -23,7 +23,7 @@ export default {
     let board, given, cursor, over, win, tickFrame;
 
     function reset() {
-      board = SOL.map((r) => [...r]);
+      board = Array.from({ length: N }, () => Array(N).fill(0));
       given = [];
       const placed = new Set();
       for (let i = 0; i < 6; i++) {

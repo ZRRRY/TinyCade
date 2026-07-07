@@ -81,10 +81,11 @@ export default {
         });
         fires.forEach((f) => f.life--);
         fires = fires.filter((f) => f.life > 0);
-        enemies.forEach((e, i) => {
+        for (let i = enemies.length - 1; i >= 0; i--) {
+          const e = enemies[i];
           if (fires.some((f) => f.x === e.x && f.y === e.y)) { enemies.splice(i, 1); score += 50; api.emit('explode'); }
           else if (e.x === player.x && e.y === player.y) { api.emit('gameover'); reset(); return; }
-        });
+        }
         if (fires.some((f) => f.x === player.x && f.y === player.y)) { api.emit('gameover'); reset(); return; }
         bombs.forEach((b) => {
           b.age++;

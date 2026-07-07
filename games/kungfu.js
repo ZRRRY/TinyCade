@@ -45,12 +45,12 @@ export default {
         me.x = Math.max(0, Math.min(W - 20, me.x));
 
         // 攻击：a 拳 (10), b 踢 (15)
-        if (input.pressed.a) { atkT = 10; api.emit('swoosh'); }
-        if (input.pressed.b) { atkT = 15; api.emit('swoosh'); }
+        if (input.pressed.a) { atkT = 10; api.emit('swoosh'); foes.forEach((f) => f.hitThisAtk = false); }
+        if (input.pressed.b) { atkT = 15; api.emit('swoosh'); foes.forEach((f) => f.hitThisAtk = false); }
 
         // 生成新敌人
         if (rng() < 0.02) {
-          foes.push({ x: W, y: 240, vx: -0.5 - rng.range(0, 1) * 0.5, hp: 2, t: rng.range(0, 100) });
+          foes.push({ x: W, y: 240, vx: -0.5 - rng.range(0, 2) * 0.5, hp: 2, t: rng.range(0, 100) });
         }
         // 敌人移动 + 反向
         foes.forEach((f) => {
@@ -72,8 +72,9 @@ export default {
         if (atkT > 0) {
           atkT--;
           for (let i = foes.length - 1; i >= 0; i--) {
-            if (Math.abs(foes[i].x - me.x) < 40) {
+            if (!foes[i].hitThisAtk && Math.abs(foes[i].x - me.x) < 40) {
               foes[i].hp--;
+              foes[i].hitThisAtk = true;
               if (foes[i].hp <= 0) { foes.splice(i, 1); score += 10; api.emit('hit'); }
             }
           }

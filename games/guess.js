@@ -32,9 +32,17 @@ export default {
     function submit() {
       const guess = input.join('');
       let a = 0, b = 0;
+      const tArr = target.split('');
+      const usedT = [false, false, false, false];
+      const usedG = [false, false, false, false];
       for (let i = 0; i < 4; i++) {
-        if (input[i] === target[i]) a++;
-        else if (target.includes(input[i])) b++;
+        if (input[i] === tArr[i]) { a++; usedT[i] = true; usedG[i] = true; }
+      }
+      for (let i = 0; i < 4; i++) {
+        if (usedG[i]) continue;
+        for (let j = 0; j < 4; j++) {
+          if (!usedT[j] && input[i] === tArr[j]) { b++; usedT[j] = true; break; }
+        }
       }
       history.unshift({ guess, a, b });
       api.emit('beep');

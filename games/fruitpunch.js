@@ -36,11 +36,12 @@ export default {
       events,
       get over() { return over; },
       update(input) {
+        if (over) return;
         targets.forEach((tg) => tg.life--);
         targets = targets.filter((tg) => tg.life > 0);
         if (rng() < 0.05) spawn();
         t -= 1 / 60;
-        if (t <= 0) { api.emit('gameover'); reset(); return; }
+        if (t <= 0 && !over) { over = true; api.emit('gameover'); return; }
 
         // 击中：a 边沿，击中屏幕中心附近的圆 [no-mouse-yet]
         if (input.pressed.a) {

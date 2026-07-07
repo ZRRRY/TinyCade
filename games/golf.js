@@ -42,8 +42,8 @@ export default {
           if (!h.a) {
             // 释放
             const ang = (dir * Math.PI) / 4;
-            ball.vx = -Math.cos(ang) * power / 10;
-            ball.vy = Math.sin(ang) * power / 10;
+            ball.vx = Math.cos(ang) * power / 10;
+            ball.vy = -Math.sin(ang) * power / 10;
             charging = false; power = 0;
             shots++; api.emit('hit');
           }
@@ -94,7 +94,7 @@ export default {
           ctx.strokeStyle = '#ff0'; ctx.lineWidth = 3;
           ctx.beginPath();
           ctx.moveTo(cx, cy);
-          ctx.lineTo(cx - Math.cos(ang) * len, cy + Math.sin(ang) * len);
+          ctx.lineTo(cx + Math.cos(ang) * len, cy - Math.sin(ang) * len);
           ctx.stroke();
         }
         ctx.fillStyle = '#000'; ctx.font = '20px VT323'; ctx.textAlign = 'left';

@@ -61,6 +61,7 @@ export default {
             }
           }
         }
+        if (tanks.every((t) => !t.alive) && !over) { over = true; api.emit('win'); }
       },
       render(ctx) {
         ctx.fillStyle = '#88aaff'; ctx.fillRect(0, 0, W, H);

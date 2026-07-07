@@ -27,9 +27,11 @@ export default {
 
     function spawnFood() {
       if (snake.length >= COLS * ROWS) { over = true; api.emit('win'); return; }
-      let a = 0;
-      do { food = { x: rng.int(COLS), y: rng.int(ROWS) }; a++; }
-      while (snake.some((s) => s.x === food.x && s.y === food.y) && a < 1000);
+      const empties = [];
+      for (let y = 0; y < ROWS; y++)
+        for (let x = 0; x < COLS; x++)
+          if (!snake.some((s) => s.x === x && s.y === y)) empties.push({ x, y });
+      food = empties[rng.int(empties.length)];
     }
 
     function reset() {

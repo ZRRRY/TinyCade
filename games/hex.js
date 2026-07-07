@@ -40,7 +40,7 @@ export default {
           v[y][x] = true;
           if (p === 1 && y === N - 1) return true;
           if (p === 2 && x === N - 1) return true;
-          const ns = [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1], [x - 1, y - 1], [x + 1, y + 1]]
+          const ns = [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1], [x + 1, y - 1], [x - 1, y + 1]]
             .filter(([nx, ny]) => nx >= 0 && nx < N && ny >= 0 && ny < N);
           for (const [nx, ny] of ns) if (!v[ny][nx] && board[ny][nx] === p) q.push([nx, ny]);
         }

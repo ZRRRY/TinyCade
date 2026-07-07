@@ -49,8 +49,8 @@ export default {
       get over() { return false; }, // 到达目标后重置, 不结束
       update(input) {
         // 持续倾斜: 按住时给重力
-        gx = (input.held.left || input.held.a) ? -1 : (input.held.right || input.held.d) ? 1 : 0;
-        gy = (input.held.up || input.held.b) ? -1 : (input.held.down) ? 1 : 0;
+        gx = input.held.left ? -1 : input.held.right ? 1 : 0;
+        gy = input.held.up ? -1 : input.held.down ? 1 : 0;
         ball.vx += gx * 0.15; ball.vy += gy * 0.15;
         ball.vx *= 0.95; ball.vy *= 0.95;
         if (!hitWall(ball.x + ball.vx, ball.y)) ball.x += ball.vx; else ball.vx = 0;

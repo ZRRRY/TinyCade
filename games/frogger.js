@@ -20,7 +20,7 @@ export default {
 
   create(rng, api) {
     const W = 360, H = 480, ROW = 30, COLS = 12;
-    let frog, cars, logs, frame = 0, winLaps = 0, timeLeft;
+    let frog, cars, logs, frame = 0, winLaps = 0, timeLeft, over = false;
     function reset() {
       frog = { x: 6, y: 13, onLog: null };
       cars = []; logs = [];
@@ -35,17 +35,17 @@ export default {
       reset();
       winLaps = 0;
       timeLeft = 60 * 60;
+      over = false;
     }
     fullReset();
     const events = [];
     api.emit = (s) => events.push(s);
-    function isOver() { return timeLeft <= 0 || winLaps >= 5; }
     return {
       events,
-      get over() { return isOver(); },
+      get over() { return over; },
       update(input) {
         frame++;
-        if (isOver()) return;
+        if (over) return;
         let nx = frog.x, ny = frog.y;
         if (input.pressed.up) ny--;
         else if (input.pressed.down) ny++;
@@ -60,13 +60,19 @@ export default {
           const log = logs.find((l) => l.y === frog.y && frog.x >= l.x && frog.x <= l.x + l.len);
           if (log) { frog.x += log.vx * 0.05; frog.onLog = log; }
           else { api.emit('hit'); reset(); }
-          if (frog.x < 0 || frog.x > COLS) { api.emit('hit'); reset(); }
+          if (frog.x < 0 || frog.x >= COLS) { api.emit('hit'); reset(); }
         } else { frog.onLog = null; }
         for (const c of cars) {
           if (c.y === frog.y && Math.abs(c.x - frog.x) < 1) { api.emit('hit'); reset(); break; }
         }
-        if (frog.y === 0) { api.emit('win'); winLaps++; reset(); }
+        if (frog.y === 0) {
+          api.emit('win');
+          winLaps++;
+          if (winLaps >= 5) { over = true; api.emit('win'); return; }
+          reset();
+        }
         timeLeft--;
+        if (timeLeft <= 0) { over = true; api.emit('gameover'); }
       },
       render(ctx) {
         ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);

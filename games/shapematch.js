@@ -22,12 +22,12 @@ export default {
     function reset() {
       targets = [];
       for (let i = 0; i < 3; i++) targets.push({ x: 30 + i * 110, y: 200, type: SHAPES[rng.int(SHAPES.length)] });
-      current = { type: targets[0].type, idx: 0 };
+      current = { type: SHAPES[rng.int(SHAPES.length)], idx: 0 };
       score = 0; over = false; tickFrame = 0;
     }
     function tryMatch() {
       if (!targets.length) return;
-      // 自动尝试：假设 current.type 是当前期望
+      // 当前持有的形状应独立于目标，仅按 A 时与目标比较
       const i = current.idx % targets.length;
       const t = targets[i];
       if (t.type === current.type) {
@@ -35,12 +35,12 @@ export default {
         api.emit('win');
         targets.splice(i, 1);
         if (!targets.length) { reset(); return; }
-        current.type = targets[0].type;
+        current.type = SHAPES[rng.int(SHAPES.length)];
+        current.idx = 0;
       } else {
         api.emit('deny');
-        // 跳到下一个
+        // 跳到下一个目标，持有的形状不变
         current.idx = (current.idx + 1) % targets.length;
-        current.type = targets[current.idx].type;
       }
     }
     function drawShape(ctx, x, y, t, filled) {

@@ -55,7 +55,7 @@ export default {
           fruits = fruits.filter((f) => {
             const dx = f.x - sx, dy = f.y - sy;
             if (dx * dx + dy * dy < f.r * f.r) {
-              if (f.type === 'bomb') { lives--; api.emit('explode'); if (lives <= 0) api.emit('gameover'); return true; }
+              if (f.type === 'bomb') { lives--; api.emit('explode'); if (lives <= 0) api.emit('gameover'); return false; }
               score += f.type === '🍉' ? 3 : 1; api.emit('swoosh'); return false;
             }
             return true;

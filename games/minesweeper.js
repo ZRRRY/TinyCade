@@ -12,7 +12,7 @@ export default {
     desc: 'Windows 经典，找出所有地雷',
     icon: '💣',
     cat: 'puzzle',
-    controls: '左键翻开 · 右键标记 · R 重开',
+    controls: '方向键移光标 · BTN.a 翻开 · BTN.b 标记 · BTN.select 重开',
     width: 400,
     height: 400,
   },
@@ -100,6 +100,7 @@ export default {
         else if (input.pressed.down) cursor.y = Math.min(H - 1, cursor.y + 1);
         else if (input.pressed.a) doReveal();
         else if (input.pressed.b) toggleFlag();
+        else if (input.pressed.select) { reset(); return; }
       },
       render(ctx) {
         ctx.fillStyle = '#0a0014'; ctx.fillRect(0, 0, 400, 400);

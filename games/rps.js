@@ -32,8 +32,9 @@ export default {
 
     return {
       events,
-      get over() { return false; },
+      get over() { return wins[0] >= 2 || wins[1] >= 2; },
       update(input) {
+        if (wins[0] >= 2 || wins[1] >= 2) return;
         const p = input.pressed;
         if (p.b) { reset(); return; }
         if (p.left && cursor > 0) cursor--;
@@ -56,7 +57,7 @@ export default {
           ctx.fillText(GEST[i], 65 + i * 110, 150);
         }
         centerText(ctx, `YOU ${wins[0]} - ${wins[1]} CPU`, W / 2, 240, '#00ffff', 24);
-        centerText(ctx, `${GEST[you]}  vs  ${GEST[cpu]}`, W / 2, 290, '#ff0', 32);
+        centerText(ctx, `${you >= 0 ? GEST[you] : 'CHOOSE!'}  vs  ${cpu >= 0 ? GEST[cpu] : '?'}`, W / 2, 290, '#ff0', 32);
       },
       serialize() { return { cursor, you, cpu, wins: wins.slice() }; },
     };

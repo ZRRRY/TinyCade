@@ -49,7 +49,7 @@ export default {
             return;
           }
         }
-        if (input.pressed.a) { ball.vy = -ball.vy; api.emit('jump'); }
+        if (input.pressed.a) { ball.vy = ball.vy === 0 ? -3 : -ball.vy; api.emit('jump'); }
         score++;
         timeLeft--;
       },

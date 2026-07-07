@@ -48,7 +48,7 @@ export default {
         let dead = false;
         walls.forEach((w) => {
           if (glider.x + 20 > w.x && glider.x < w.x + w.w &&
-              glider.y + 6 > w.y && glider.y < w.y + w.h) dead = true;
+              glider.y + 4 > w.y && glider.y - 4 < w.y + w.h) dead = true;
         });
         if (dead) { over = true; api.emit('gameover'); return; }
         if (glider.y > H) { over = true; api.emit('win'); return; }

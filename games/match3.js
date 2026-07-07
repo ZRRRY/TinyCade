@@ -22,14 +22,22 @@ export default {
     let board, score, busy, over, tickFrame, animTicks;
 
     function findMatches() {
-      const m = [];
+      const matched = new Set();
       for (let y = 0; y < N; y++)
         for (let x = 0; x < N - 2; x++)
-          if (board[y][x] === board[y][x + 1] && board[y][x] === board[y][x + 2]) m.push([x, y]);
+          if (board[y][x] === board[y][x + 1] && board[y][x] === board[y][x + 2]) {
+            matched.add(`${x},${y}`);
+            matched.add(`${x + 1},${y}`);
+            matched.add(`${x + 2},${y}`);
+          }
       for (let x = 0; x < N; x++)
         for (let y = 0; y < N - 2; y++)
-          if (board[y][x] === board[y + 1][x] && board[y][x] === board[y + 2][x]) m.push([x, y]);
-      return m;
+          if (board[y][x] === board[y + 1][x] && board[y][x] === board[y + 2][x]) {
+            matched.add(`${x},${y}`);
+            matched.add(`${x},${y + 1}`);
+            matched.add(`${x},${y + 2}`);
+          }
+      return matched;
     }
     function reset() {
       board = [];
@@ -38,7 +46,7 @@ export default {
         for (let x = 0; x < N; x++) r.push(rng.int(GEMS.length));
         board.push(r);
       }
-      while (findMatches().length) {
+      while (findMatches().size) {
         for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) board[y][x] = rng.int(GEMS.length);
       }
       score = 0; busy = false; over = false; tickFrame = 0; animTicks = 0;
@@ -56,13 +64,22 @@ export default {
         if (nx < 0 || nx >= N || ny < 0 || ny >= N) continue;
         [board[y][x], board[ny][nx]] = [board[ny][nx], board[y][x]];
         const m = findMatches();
-        if (m.length) {
-          score += m.length * 10;
+        if (m.size) {
+          score += m.size * 10;
           api.emit('clear');
-          m.forEach(([mx, my]) => {
-            for (let i = my; i >= 0 && i + 1 < N; i--) board[i + 1][mx] = board[i][mx] || rng.int(GEMS.length);
-            board[0][mx] = rng.int(GEMS.length);
+          // 标记所有匹配格为空
+          m.forEach((key) => {
+            const [mx, my] = key.split(',').map(Number);
+            board[my][mx] = null;
           });
+          // 整列下落并补充新宝石
+          for (let x = 0; x < N; x++) {
+            let write = N - 1;
+            for (let y = N - 1; y >= 0; y--) {
+              if (board[y][x] !== null) board[write--][x] = board[y][x];
+            }
+            while (write >= 0) board[write--][x] = rng.int(GEMS.length);
+          }
           break;
         } else {
           [board[y][x], board[ny][nx]] = [board[ny][nx], board[y][x]];

@@ -26,8 +26,7 @@ export default {
     function stepGuess() {
       if (guess.length >= target.length) {
         if (guess === target) { score++; win = true; over = true; api.emit('win'); }
-        else { api.emit('deny'); }
-        reset();
+        else { api.emit('deny'); reset(); }
         return;
       }
       const ch = target[guessIdx];
@@ -43,6 +42,7 @@ export default {
       get over() { return over; },
       update(input) {
         tickFrame++;
+        if (over) return;
         if (input.pressed.a) stepGuess();
         else if (input.pressed.b) { guess = ''; guessIdx = 0; api.emit('beep'); }
       },

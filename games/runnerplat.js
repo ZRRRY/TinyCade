@@ -52,7 +52,7 @@ export default {
         for (const o of obs) {
           if (player.x < o.x + o.w && player.x + 20 > o.x &&
               player.y < o.y + o.h && player.y + 30 > o.y) {
-            api.emit('gameover'); reset(); return;
+            over = true; api.emit('gameover'); return;
           }
         }
       },

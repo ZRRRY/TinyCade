@@ -51,7 +51,7 @@ export default {
           const cx = W / 2, cy = H / 2;
           items = items.filter((it) => {
             if (Math.abs(it.x - cx) < 30 && Math.abs(it.y - cy) < 30) {
-              if (it.type === 'bomb') { api.emit('explode'); combo = 0; return true; }
+              if (it.type === 'bomb') { api.emit('explode'); combo = 0; return false; }
               else { api.emit('swoosh'); score += 10; combo++; return false; }
             }
             return true;

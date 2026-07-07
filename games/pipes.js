@@ -18,6 +18,22 @@ export default {
   create(rng, api) {
     const N = 5, CELL = 70;
     const TYPES = ['│', '─', '┘', '└', '┐', '┌', '┤', '┴', '├', '┬', '┼'];
+    const OPEN = {
+      '│': ['u', 'd'],
+      '─': ['l', 'r'],
+      '┘': ['u', 'l'],
+      '└': ['u', 'r'],
+      '┐': ['d', 'l'],
+      '┌': ['d', 'r'],
+      '┤': ['u', 'd', 'l'],
+      '┴': ['u', 'l', 'r'],
+      '├': ['u', 'd', 'r'],
+      '┬': ['d', 'l', 'r'],
+      '┼': ['u', 'd', 'l', 'r'],
+    };
+    const ROT = { u: 'r', r: 'd', d: 'l', l: 'u' };
+    function rotateDir(d, r) { let out = d; for (let i = 0; i < r; i++) out = ROT[out]; return out; }
+    function getOpenDirs(cell) { return OPEN[cell.t].map((d) => rotateDir(d, cell.r)); }
     let grid, flow, solved, cursor, tickFrame;
 
     function reset() {
@@ -42,20 +58,20 @@ export default {
       function dfs(x, y, from) {
         if (x < 0 || x >= N || y < 0 || y >= N) return;
         if (flow[y][x]) return;
+        const opens = getOpenDirs(grid[y][x]);
+        if (from && !opens.includes(from)) return;
         flow[y][x] = true;
-        const t = grid[y][x].t, r = grid[y][x].r;
-        // 简化：原始字符方向定义 + 旋转 90 度
-        // 这里只判断 │ ─ ┼ 等的连通性；为简化只检竖直横直
-        if (t === '│' || t === '┌' || t === '┐' || t === '├' || t === '┤' || t === '┼' || t === '┬' || t === '┴') {
-          if (from !== 'u') dfs(x, y - 1, 'd');
-          if (from !== 'd') dfs(x, y + 1, 'u');
-        }
-        if (t === '─' || t === '┘' || t === '└' || t === '├' || t === '┤' || t === '┼' || t === '┬' || t === '┴') {
-          if (from !== 'l') dfs(x - 1, y, 'r');
-          if (from !== 'r') dfs(x + 1, y, 'l');
+        for (const d of opens) {
+          if (d === from) continue;
+          let nx = x, ny = y, nd;
+          if (d === 'u') { ny = y - 1; nd = 'd'; }
+          else if (d === 'd') { ny = y + 1; nd = 'u'; }
+          else if (d === 'l') { nx = x - 1; nd = 'r'; }
+          else if (d === 'r') { nx = x + 1; nd = 'l'; }
+          if (nx >= 0 && nx < N && ny >= 0 && ny < N && getOpenDirs(grid[ny][nx]).includes(nd)) dfs(nx, ny, nd);
         }
       }
-      dfs(0, 2, 'l');
+      dfs(0, 2, null);
       if (flow[2][N - 1] && !solved) { solved = true; api.emit('win'); }
     }
     function rotate() {

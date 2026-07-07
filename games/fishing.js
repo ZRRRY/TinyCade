@@ -52,8 +52,9 @@ export default {
           if (f) {
             f.alive = false; score += 10; api.emit('win');
             hook.state = 'wait'; hook.y = 50;
+            fishes.push({ x: rng.int(W), y: 300 + rng.int(100), alive: true, t: rng.int(100) });
           }
-          if (hook.y < 50) hook.state = 'wait';
+          if (hook.y < 50) { hook.state = 'wait'; hook.y = 50; }
         } else if (hook.state === 'gone') {
           hook.state = 'wait'; // 1 秒后回 wait
         }

@@ -14,7 +14,7 @@ export default {
     desc: '经典 9×9 逻辑填数，独一无二',
     icon: '🔲',
     cat: 'puzzle',
-    controls: '点击格子 + 数字键填数 · 空格清空',
+    controls: '方向键移动光标 · A 填入下一个正确答案 · B 清空当前格',
   },
   tickHz: 10,
 
@@ -72,8 +72,7 @@ export default {
       return true;
     }
     function fillNext() {
-      if (given[cursor.y][cursor.x]) return;
-      // 找下一个空格
+      // 从当前光标开始搜索下一个空格（光标本身可能是给定格）
       let x = cursor.x, y = cursor.y;
       for (let tries = 0; tries < N * N; tries++) {
         if (!given[y][x] && puzzle[y][x] === 0) break;

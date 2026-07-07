@@ -78,11 +78,14 @@ export default {
           const empty = [];
           for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (!board[y][x]) empty.push([x, y]);
           if (empty.length) {
+            let moved = false;
             // 试一下随机位; 失败就再试
-            for (let tries = 0; tries < 20; tries++) {
+            for (let tries = 0; tries < 20 && !moved; tries++) {
               const [x, y] = empty[rng.int(empty.length)];
-              if (play(x, y, 2)) { turn = 1; api.emit('blip'); break; }
+              if (play(x, y, 2)) moved = true;
             }
+            if (moved) { turn = 1; api.emit('blip'); }
+            else { turn = 1; api.emit('pass'); } // 无合法步，pass
           }
         } else {
           if (p.left && cursor.x > 0) cursor.x--;

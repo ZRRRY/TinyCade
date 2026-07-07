@@ -11,7 +11,7 @@ export default {
     desc: '一笔画连所有点',
     icon: '✏️',
     cat: 'puzzle',
-    controls: '拖动连接所有点',
+    controls: '按 A 自动连接',
   },
   tickHz: 10,
 

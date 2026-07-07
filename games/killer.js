@@ -11,7 +11,7 @@ export default {
     desc: '数独变体，笼内之和提示',
     icon: '🔪',
     cat: 'puzzle',
-    controls: '点击格子 · 输入 1-9',
+    controls: '方向键移光标 · BTN.a 填数 · BTN.b 清空',
   },
   tickHz: 10,
 

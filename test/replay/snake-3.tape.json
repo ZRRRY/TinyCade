@@ -1,7 +1,7 @@
 {
   "game": "snake",
-  "seed": 10002,
-  "maxTicks": 300,
+  "seed": 12345,
+  "maxTicks": 500,
   "frames": [
     {
       "tick": 0,

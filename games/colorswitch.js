@@ -21,12 +21,13 @@ export default {
   create(rng, api) {
     const W = 360, H = 480;
     const COLORS = ['#ff0066', '#00ffff', '#ffff00', '#00ff66'];
-    let ball, obs, score, vy, color, timeLeft, frame = 0;
+    let ball, obs, score, vy, color, timeLeft, frame = 0, dead;
     function reset() {
       ball = { x: W / 2, y: H - 40, r: 10 };
       obs = []; score = 0; vy = 0;
       color = COLORS[0];
       timeLeft = 60 * 60;
+      dead = false;
       spawn();
     }
     function spawn() {
@@ -49,10 +50,10 @@ export default {
     function isOver() { return timeLeft <= 0; }
     return {
       events,
-      get over() { return isOver(); },
+      get over() { return isOver() || dead; },
       update(input) {
         frame++;
-        if (isOver()) return;
+        if (isOver() || dead) return;
         vy += 0.4; ball.y += vy;
         if (ball.y < H * 0.4 - 90) {
           obs.forEach((o) => { o.y += 6; });
@@ -66,7 +67,7 @@ export default {
             const a = Math.atan2(dy, dx); const ad = (a + Math.PI * 2) % (Math.PI * 2);
             if (Math.sqrt(dx * dx + dy * dy) > o.r - 14) {
               const seg = o.segs.find((s) => ad >= s.a0 && ad <= s.a1);
-              if (!seg || seg.color !== color) { api.emit('gameover'); reset(); }
+              if (!seg || seg.color !== color) { dead = true; api.emit('gameover'); }
             }
           }
         });

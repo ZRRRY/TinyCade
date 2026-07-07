@@ -50,7 +50,7 @@ export default {
       update(input) {
         tickFrame++;
         if (timeTicks > 0) timeTicks--;
-        if (input.pressed.a) {
+        if (input.pressed.a && !over) {
           // 自动选对
           score++; api.emit('blip');
           gen();

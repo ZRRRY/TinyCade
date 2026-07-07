@@ -47,11 +47,14 @@ export default {
         if (score % 30 === 0) spawn();
         cars.forEach((c) => { c.y += 6; });
         cars = cars.filter((c) => c.y < H + 40);
-        for (const c of cars) {
-          if (c.lane === player.lane && Math.abs(c.y - player.y) < 30) {
-            lives--; api.emit('gameover');
-            if (lives <= 0) return;
-            cars.splice(cars.indexOf(c), 1);
+        const py = player.y - (jumpT > 0 ? 30 : 0);
+        for (let i = 0; i < cars.length; i++) {
+          const c = cars[i];
+          if (c.lane === player.lane && Math.abs(c.y - py) < 30) {
+            lives--;
+            if (lives <= 0) { api.emit('gameover'); return; }
+            api.emit('hit');
+            cars.splice(i, 1);
             break;
           }
         }

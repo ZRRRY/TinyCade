@@ -20,10 +20,10 @@ export default {
 
   create(rng, api) {
     const W = 360, H = 480;
-    let notes, score, combo, t, over;
+    let notes, score, combo, t, over, time;
 
     function reset() {
-      notes = []; score = 0; combo = 0; t = 0; over = false;
+      notes = []; score = 0; combo = 0; t = 0; over = false; time = 60;
     }
 
     function hit(lane) {
@@ -45,6 +45,8 @@ export default {
       get over() { return over; },
       update(input) {
         t += 1;
+        time -= 1 / 60;
+        if (time <= 0) { over = true; api.emit('gameover'); return; }
         if (t % 30 === 0) {
           const lane = rng.int(4);
           notes.push({ y: -20, lane, alive: true });
@@ -80,7 +82,7 @@ export default {
         ctx.fillStyle = '#fff'; ctx.font = '18px VT323, monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
         ctx.fillText(`COMBO ${combo}`, 10, 10);
       },
-      serialize() { return { score, combo, t, over }; },
+      serialize() { return { score, combo, t, over, time }; },
     };
   },
 };

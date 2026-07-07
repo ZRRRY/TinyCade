@@ -27,9 +27,10 @@ export default {
       walls = []; score = 0; speed = 3; over = false;
     }
     function hit() {
+      const pw = 30, ph = 12;
       for (const w of walls) {
-        if (w.x < 80 && w.x > 40) {
-          if (plane.y < w.gapY || plane.y > w.gapY + w.gap) return true;
+        if (w.x < plane.x + pw / 2 && w.x + 30 > plane.x - pw / 2) {
+          if (plane.y - ph / 2 < w.gapY || plane.y + ph / 2 > w.gapY + w.gap) return true;
         }
       }
       return false;
@@ -43,6 +44,7 @@ export default {
       events,
       get over() { return over; },
       update(input) {
+        if (over) return;
         if (input.held.up) plane.y -= 4;
         if (input.held.down) plane.y += 4;
         plane.y = Math.max(10, Math.min(H - 10, plane.y));

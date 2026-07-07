@@ -49,7 +49,7 @@ export default {
           if (Math.abs(t.x - skier.x) < 14 && Math.abs(t.y - skier.y) < 14) {
             lives--; api.emit('gameover');
             if (lives <= 0) return;
-            skier.x = 180; skier.a = 0; trees = trees.filter((tt) => tt.y < -50 || tt.y > 100);
+            skier.x = 180; skier.a = 0; trees = [];
             return;
           }
         }

@@ -13,6 +13,8 @@ export default {
     icon: '✨',
     cat: 'action',
     controls: '方向键移动 · 躲避弹幕',
+    width: 400,
+    height: 480,
   },
   tickHz: 60,
 

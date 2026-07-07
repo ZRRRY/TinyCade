@@ -61,7 +61,7 @@ export default {
             }
           }
         } else if (phase === 'counter') {
-          if (rng() < 0.05) {
+          if (input.pressed.a && rng() < 0.05) {
             ehp--; score++; api.emit('hit');
             if (ehp <= 0) { over = true; api.emit('win'); return; }
             phase = 'wait';

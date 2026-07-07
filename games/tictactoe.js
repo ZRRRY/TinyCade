@@ -50,8 +50,8 @@ export default {
       get over() { return over; },
       update(input) {
         const p = input.pressed, h = input.held;
-        if (over) return;
         if (p.b) { reset(); return; }
+        if (over) return;
         if (turn === 2) {
           // AI 自动落子（用 rng）
           const idx = aiMove();

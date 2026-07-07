@@ -38,18 +38,25 @@ export default {
       while (v > 21 && a) { v -= 10; a--; }
       return v;
     }
-    function deal() {
+    function shuffle() {
       deck = Array.from({ length: 52 }, (_, i) => i);
       for (let i = deck.length - 1; i > 0; i--) {
         const j = rng.int(i + 1);
         [deck[i], deck[j]] = [deck[j], deck[i]];
       }
-      player = [deck.pop(), deck.pop()];
-      dealer = [deck.pop(), deck.pop()];
+    }
+    function draw() {
+      if (!deck.length) shuffle();
+      return deck.pop();
+    }
+    function deal() {
+      shuffle();
+      player = [draw(), draw()];
+      dealer = [draw(), draw()];
       state = 'play';
     }
     function stand() {
-      while (val(dealer) < 17) dealer.push(deck.pop());
+      while (val(dealer) < 17) dealer.push(draw());
       const pv = val(player), dv = val(dealer);
       if (pv > 21) state = 'lose';
       else if (dv > 21 || pv > dv) state = 'win';
@@ -69,13 +76,14 @@ export default {
         if (p.start) { deal(); return; }
         if (state !== 'play') return;
         if (p.a) {
-          player.push(deck.pop());
+          player.push(draw());
           if (val(player) > 21) { state = 'lose'; api.emit('lose'); }
           else api.emit('move');
         } else if (p.b) {
           stand();
           if (state === 'win') api.emit('win');
           else if (state === 'lose') api.emit('lose');
+          else if (state === 'push') api.emit('push');
         }
         frame++;
       },

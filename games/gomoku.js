@@ -47,6 +47,10 @@ export default {
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (!board[y][x]) empty.push([x, y]);
       return empty.length ? empty[rng.int(empty.length)] : null;
     }
+    function isFull() {
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (!board[y][x]) return false;
+      return true;
+    }
 
     reset();
     const events = [];
@@ -64,7 +68,10 @@ export default {
           if (m) {
             board[m[1]][m[0]] = 2;
             if (checkWin(m[0], m[1])) { over = true; api.emit('gameover'); return; }
+            if (isFull()) { over = true; api.emit('draw'); return; }
             turn = 1;
+          } else {
+            over = true; api.emit('draw'); return;
           }
         } else {
           if (p.left && cursor.x > 0) cursor.x--;
@@ -75,6 +82,7 @@ export default {
             board[cursor.y][cursor.x] = 1;
             api.emit('place');
             if (checkWin(cursor.x, cursor.y)) { over = true; api.emit('win'); return; }
+            if (isFull()) { over = true; api.emit('draw'); return; }
             turn = 2;
           }
         }

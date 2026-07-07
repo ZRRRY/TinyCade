@@ -43,8 +43,8 @@ export default {
         if (slideT > 0) slideT--;
         score++;
 
-        // 生成障碍：low（高 30）和 high（高 50）
-        if (rng() < 0.02) obs.push({ x: W, y: GROUND - 30, w: 30, h: 30, t: 'low' });
+        // 生成障碍：仅 high（高 50），滑铲可躲避
+        if (rng() < 0.02) { /* 原 low 障碍已移除，仅推进 rng */ }
         if (rng() < 0.015) obs.push({ x: W, y: GROUND - 70, w: 30, h: 50, t: 'high' });
 
         obs.forEach((o) => { o.x -= 6; });

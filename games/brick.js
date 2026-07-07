@@ -20,12 +20,12 @@ export default {
 
   create(rng, api) {
     const W = 360, H = 480;
-    let paddle, balls, bricks, score, lives, timeLeft, frame = 0;
+    let paddle, balls, bricks, score, lives, timeLeft, frame = 0, won = false;
     function reset() {
       paddle = { x: 150, y: 440, w: 60, h: 10 };
       balls = [{ x: 180, y: 430, vx: 2, vy: -3 }];
       bricks = [];
-      score = 0; lives = 3;
+      score = 0; lives = 3; won = false;
       for (let r = 0; r < 6; r++)
         for (let c = 0; c < 8; c++)
           bricks.push({ x: c * 45, y: r * 22, w: 42, h: 18, c: ['#ff00ff', '#00ffff', '#ffff00', '#88ff00', '#ff8800', '#ff0066'][r], alive: true });
@@ -34,7 +34,7 @@ export default {
     reset();
     const events = [];
     api.emit = (s) => events.push(s);
-    function isOver() { return lives <= 0 || timeLeft <= 0; }
+    function isOver() { return lives <= 0 || timeLeft <= 0 || won; }
     return {
       events,
       get over() { return isOver(); },
@@ -58,14 +58,15 @@ export default {
             b.vy = -Math.abs(b.vy); api.emit('blip');
           }
         });
-        bricks.forEach((br, i) => {
+        for (let i = bricks.length - 1; i >= 0; i--) {
+          const br = bricks[i];
           balls.forEach((b) => {
             if (b.x > br.x && b.x < br.x + br.w && b.y > br.y && b.y < br.y + br.h) {
               b.vy *= -1; bricks.splice(i, 1); score += 10; api.emit('hit');
             }
           });
-        });
-        if (bricks.length === 0) { api.emit('win'); reset(); }
+        }
+        if (bricks.length === 0 && !won) { won = true; api.emit('win'); }
         timeLeft--;
       },
       render(ctx) {

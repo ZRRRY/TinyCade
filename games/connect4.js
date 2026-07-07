@@ -11,6 +11,8 @@ export default {
     icon: '🟡',
     cat: 'strategy',
     controls: '← → 选列 · BTN.a 落子 · BTN.b 重开',
+    width: 420,
+    height: 360,
   },
   tickHz: 10,
 
@@ -46,6 +48,10 @@ export default {
       for (let c = 0; c < COLS; c++) if (!board[0][c]) valid.push(c);
       return valid.length ? valid[rng.int(valid.length)] : -1;
     }
+    function isFull() {
+      for (let c = 0; c < COLS; c++) if (!board[0][c]) return false;
+      return true;
+    }
 
     reset();
     const events = [];
@@ -64,7 +70,10 @@ export default {
             const w = drop(c, 2);
             api.emit('drop');
             if (w) { over = true; api.emit('gameover'); return; }
+            if (isFull()) { over = true; api.emit('draw'); return; }
             turn = 1;
+          } else {
+            over = true; api.emit('draw'); return;
           }
         } else {
           if (p.left && hover > 0) hover--;
@@ -73,6 +82,7 @@ export default {
             const w = drop(hover, 1);
             api.emit('drop');
             if (w) { over = true; api.emit('win'); return; }
+            if (isFull()) { over = true; api.emit('draw'); return; }
             turn = 2;
           }
         }

@@ -54,13 +54,17 @@ export default {
         bullets.forEach((b) => { b.y -= 6; });
         bullets = bullets.filter((b) => b.y > 0);
         const hits = new Set();
-        bullets.forEach((b, bi) => {
+        const survivingBullets = [];
+        bullets.forEach((b) => {
+          let hit = false;
           centi.forEach((s, si) => {
-            if (!hits.has(si) && Math.abs(s.x - b.x) < 10 && Math.abs(s.y - b.y) < 10) {
-              hits.add(si); bullets.splice(bi, 1); score += 10; api.emit('hit');
+            if (!hit && !hits.has(si) && Math.abs(s.x - b.x) < 10 && Math.abs(s.y - b.y) < 10) {
+              hits.add(si); hit = true; score += 10; api.emit('hit');
             }
           });
+          if (!hit) survivingBullets.push(b);
         });
+        bullets = survivingBullets;
         centi = centi.filter((_, i) => !hits.has(i));
         for (const s of centi) {
           if (Math.abs(s.x - player.x) < 14 && Math.abs(s.y - player.y) < 14) {

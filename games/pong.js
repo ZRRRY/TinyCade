@@ -41,14 +41,14 @@ export default {
         if (over) return;
         ball.x += ball.vx; ball.y += ball.vy;
         if (ball.y <= 4 || ball.y >= 316) ball.vy *= -1;
-        if (ball.x <= 14 && ball.y >= p1.y && ball.y <= p1.y + 60) {
+        if (ball.x - 4 <= 14 && ball.x + 4 >= 4 && ball.y >= p1.y && ball.y <= p1.y + 60) {
           ball.vx = Math.abs(ball.vx); ball.vy += (rng() - 0.5) * 2; api.emit('blip');
         }
-        if (ball.x >= 466 && ball.y >= p2.y && ball.y <= p2.y + 60) {
+        if (ball.x + 4 >= 466 && ball.x - 4 <= 476 && ball.y >= p2.y && ball.y <= p2.y + 60) {
           ball.vx = -Math.abs(ball.vx); ball.vy += (rng() - 0.5) * 2; api.emit('blip');
         }
-        if (ball.x < 0) { score2++; api.emit('gameover'); newBall(1); }
-        if (ball.x > 480) { score1++; api.emit('gameover'); newBall(-1); }
+        if (ball.x < 0) { score2++; api.emit('score'); newBall(1); }
+        if (ball.x > 480) { score1++; api.emit('score'); newBall(-1); }
         ball.vy = Math.max(-6, Math.min(6, ball.vy));
         // AI: 慢慢追球中心（弱）
         if (ball.vx > 0) {
@@ -56,7 +56,7 @@ export default {
           if (p2.y < target) p2.y = Math.min(260, p2.y + 1);
           else if (p2.y > target) p2.y = Math.max(0, p2.y - 1);
         }
-        if (score1 >= 21 || score2 >= 21) over = true;
+        if (score1 >= 21 || score2 >= 21) { over = true; api.emit('gameover'); }
       },
       render(ctx) {
         ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);

@@ -14,7 +14,7 @@ export default {
     desc: '9 个洞口，地鼠乱窜，锤它！',
     icon: '🔨',
     cat: 'arcade',
-    controls: '点击/点击地鼠 · 限时 60 秒',
+    controls: '方向键移动光标 · A 敲击 · 限时 60 秒',
   },
   tickHz: 30, // 原版 1000/30 ≈ 33Hz
 
@@ -22,10 +22,10 @@ export default {
     const SIZE = 130;
     // 计算击中位置：从 input.pressed.a 衍生"全局点击"，对全 9 格各检查一次
     // 简化：input.held.left/right/up 用于移动光标，pressed.a 触发点击。
-    let moles, score, timeTicks, tickFrame;
+    let moles, score, timeTicks, tickFrame, cursor;
     function reset() {
       moles = Array.from({ length: 9 }, () => ({ up: false, born: 0 }));
-      score = 0; timeTicks = 60 * 30; tickFrame = 0; // 60s @ 30Hz
+      score = 0; timeTicks = 60 * 30; tickFrame = 0; cursor = 4; // 60s @ 30Hz，光标起始于中心
     }
     reset();
     const events = [];
@@ -43,9 +43,13 @@ export default {
         moles.forEach((m) => {
           if (m.up && tickFrame - m.born > 45) m.up = false; // ~1.5s 后躲回
         });
-        // 键盘模拟"点击中央格 (idx=4)"：简易演示
+        // 方向键移动光标，A 键敲击光标所在洞
+        if (input.pressed.left && cursor % 3 > 0) cursor--;
+        if (input.pressed.right && cursor % 3 < 2) cursor++;
+        if (input.pressed.up && cursor >= 3) cursor -= 3;
+        if (input.pressed.down && cursor < 6) cursor += 3;
         if (input.pressed.a) {
-          const i = 4;
+          const i = cursor;
           if (moles[i].up) { moles[i].up = false; score += 10; api.emit('hit'); }
         }
         if (timeTicks > 0) timeTicks--;
@@ -74,6 +78,12 @@ export default {
             ctx.fillStyle = '#fff'; ctx.fillRect(-6, -32, 4, 8); ctx.fillRect(2, -32, 4, 8);
             ctx.restore();
           }
+        }
+        // 光标框
+        {
+          const x = (cursor % 3) * SIZE + 20, y = Math.floor(cursor / 3) * SIZE + 20;
+          ctx.strokeStyle = '#ffff00'; ctx.lineWidth = 4;
+          ctx.strokeRect(x + 4, y + 4, SIZE - 8, SIZE - 8);
         }
       },
       serialize() { return { score, timeTicks: Math.max(0, timeTicks), over: this.over }; },

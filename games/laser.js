@@ -29,7 +29,14 @@ export default {
       exit = { x: 330, y: 440, w: 24, h: 24 };
       over = false;
       for (let i = 0; i < 6; i++) {
-        lasers.push({ x: 0, y: 80 + i * 60, w: W, h: 4, phase: i * 0.5, dir: i % 2 ? 'h' : 'v' });
+        if (i % 2 === 0) {
+          // 垂直激光：竖条贯穿画布高度，沿 y 轴摆动
+          lasers.push({ x: 60 + i * 40, y: 0, w: 4, h: H, phase: i * 0.5, dir: 'v' });
+        } else {
+          // 水平激光：横条贯穿画布宽度，沿 y 轴摆动
+          const y = 80 + i * 60;
+          lasers.push({ x: 0, y, w: W, h: 4, phase: i * 0.5, dir: 'h', baseY: y });
+        }
       }
     }
 
@@ -48,14 +55,10 @@ export default {
         if (input.held.up) player.y -= 5;
         if (input.held.down) player.y += 5;
 
-        // 垂直激光摆动
+        // 激光摆动
         lasers.forEach((l) => {
-          if (l.dir === 'v') l.x = Math.sin(t + l.phase) * 100 + 100;
-        });
-        // 水平激光：跟玩家水平位置
-        lasers.forEach((l) => {
-          if (l.dir === 'h' && l.x < player.x - 20) l.x = player.x - 20;
-          if (l.dir === 'v' && l.y < player.y - 20) l.y = player.y - 20;
+          if (l.dir === 'v') l.y = Math.sin(t + l.phase) * 100 + 100;
+          if (l.dir === 'h') l.y = Math.sin(t + l.phase) * 60 + l.baseY;
         });
 
         // 碰撞
@@ -66,8 +69,9 @@ export default {
         });
         if (dead) { api.emit('gameover'); reset(); return; }
 
-        // 抵达
-        if (player.x > exit.x && player.y > exit.y) {
+        // 抵达：完整矩形碰撞检测
+        if (player.x + 8 > exit.x && player.x < exit.x + exit.w &&
+            player.y + 8 > exit.y && player.y < exit.y + exit.h) {
           api.emit('win'); reset(); return;
         }
       },

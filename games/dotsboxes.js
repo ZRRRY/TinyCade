@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    games/dotsboxes.js — 点格游戏（策略类）
    5x5. 随机开始玩家. 玩家方向键 + BTN.a 画线（AI 随机）.
    ============================================================ */
@@ -43,6 +43,19 @@ export default {
       }
       return made;
     }
+    function isBoardFull() {
+      for (let y = 0; y <= N; y++) for (let x = 0; x < N; x++) if (!hLines[y][x]) return false;
+      for (let y = 0; y < N; y++) for (let x = 0; x <= N; x++) if (!vLines[y][x]) return false;
+      return true;
+    }
+    function endIfFull() {
+      if (isBoardFull()) {
+        over = true;
+        api.emit(scores[0] >= scores[1] ? 'win' : 'gameover');
+        return true;
+      }
+      return false;
+    }
 
     reset();
     const events = [];
@@ -65,8 +78,10 @@ export default {
             if (k === 'h') drawH(y, x); else drawV(y, x);
             api.emit('beep');
             if (!checkBoxesNew()) turn = 1;
+            endIfFull();
           } else {
             over = true;
+            api.emit(scores[0] >= scores[1] ? 'win' : 'gameover');
           }
         } else {
           if (p.left || p.right || p.up || p.down) {
@@ -82,16 +97,27 @@ export default {
           else if (p.left && cursor.kind === 'v' && cursor.x > 0) cursor.x--;
           else if (p.right && cursor.kind === 'v' && cursor.x < N) cursor.x++;
           // select 在 h/v 之间切换
-          if (p.select) cursor.kind = cursor.kind === 'h' ? 'v' : 'h';
+          if (p.select) {
+            cursor.kind = cursor.kind === 'h' ? 'v' : 'h';
+            if (cursor.kind === 'h') {
+              cursor.x = Math.min(cursor.x, N - 1);
+              cursor.y = Math.min(cursor.y, N);
+            } else {
+              cursor.x = Math.min(cursor.x, N);
+              cursor.y = Math.min(cursor.y, N - 1);
+            }
+          }
           if (p.a) {
             if (cursor.kind === 'h' && !hLines[cursor.y][cursor.x]) {
               drawH(cursor.y, cursor.x);
               api.emit('beep');
               if (!checkBoxesNew()) turn = 2;
+              endIfFull();
             } else if (cursor.kind === 'v' && !vLines[cursor.y][cursor.x]) {
               drawV(cursor.y, cursor.x);
               api.emit('beep');
               if (!checkBoxesNew()) turn = 2;
+              endIfFull();
             }
           }
         }
@@ -126,7 +152,7 @@ export default {
           else ctx.strokeRect(cursor.x * CELL - 2, cursor.y * CELL + 20 - 4, 4 + 4, CELL - 40 + 8);
         }
       },
-      serialize() { return { hLines, vLines, boxes, turn, scores, over: false, cursor: { ...cursor } }; },
+      serialize() { return { hLines, vLines, boxes, turn, scores, over, cursor: { ...cursor } }; },
     };
   },
 };

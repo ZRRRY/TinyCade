@@ -47,7 +47,6 @@ export default {
         }
         if (ball) {
           ball.y += ball.vy; ball.x += ball.vx;
-          if (ball.y < 100) ball.vy = 0;
           for (const p of pins) {
             if (p.alive && Math.abs(ball.x - p.x) < 20 && Math.abs(ball.y - p.y) < 20) {
               p.alive = false; ball.x = p.x; ball.alive = false;
@@ -58,7 +57,7 @@ export default {
             score += downed; api.emit('hit');
             frame++;
             if (frame >= 2) {
-              pins.forEach((p) => (p.alive = true)); frame = 0;
+              pins.forEach((p) => (p.alive = true)); frame = 0; frameCount = 0;
             }
             ball = null;
           }

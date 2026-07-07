@@ -12,7 +12,7 @@ export default {
     desc: '比大小赢回合',
     icon: '🎲',
     cat: 'strategy',
-    controls: 'BTN.a 投掷 · BTN.b 重开',
+    controls: 'BTN.a 投掷 · BTN.select 下一轮 · BTN.b 重开',
     width: 360,
     height: 360,
   },
@@ -63,7 +63,7 @@ export default {
         centerText(ctx, `${score[0]} - ${score[1]}`, W / 2, 330, '#00ffff', 20);
         if (turn >= 5) {
           centerText(ctx, score[0] > score[1] ? 'YOU WIN!' : score[1] > score[0] ? 'CPU WINS!' : 'DRAW', W / 2, 30,
-            score[0] >= score[1] ? '#00ff00' : '#ff0000', 24);
+            score[0] > score[1] ? '#00ff00' : score[1] > score[0] ? '#ff0000' : '#ffff00', 24);
         } else {
           centerText(ctx, `ROUND ${turn + 1}/5 · BTN.a TO ROLL`, W / 2, 380, '#888', 14);
         }

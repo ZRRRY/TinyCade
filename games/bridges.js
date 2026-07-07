@@ -57,6 +57,11 @@ export default {
       const a = Math.min(cursor, nearest), c = Math.max(cursor, nearest);
       bridges.push({ a, c, n: 1 });
       api.emit('beep');
+      const allMatch = ISLANDS.every((is, i) => {
+        const deg = bridges.filter((b) => b.a === i || b.c === i).reduce((s, b) => s + b.n, 0);
+        return deg === is.n;
+      });
+      if (allMatch) { over = true; api.emit('win'); }
     }
     reset();
 

@@ -34,6 +34,7 @@ export default {
       events,
       get over() { return over; },
       update(input) {
+        if (over) return;
         if (input.held.left) player.x -= 6;
         if (input.held.right) player.x += 6;
         player.x = Math.max(10, Math.min(350, player.x));

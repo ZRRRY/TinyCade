@@ -52,9 +52,11 @@ export default {
         obs = obs.filter((o) => o.x + o.w > 0);
         cloud.forEach((c) => { c.x -= speed * 0.3; });
         cloud.forEach((c) => { if (c.x < -20) { c.x = W + 20; c.y = 30 + rng() * 60; } });
-        const me = { x: dino.x, y: dino.y, w: dino.w, h: duck ? 24 : dino.h };
+        const meY = duck ? GROUND - 24 : dino.y;
+        const meH = duck ? 24 : dino.h;
+        const me = { x: dino.x, y: meY, w: dino.w, h: meH };
         for (const o of obs) {
-          const oy = o.h >= 36 && o.fly ? GROUND - 70 : GROUND - o.h;
+          const oy = o.fly ? GROUND - 70 : GROUND - o.h;
           if (me.x < o.x + o.w && me.x + me.w > o.x && me.y < oy + o.h && me.y + me.h > oy) {
             over = true; api.emit('gameover'); return;
           }
@@ -73,10 +75,11 @@ export default {
         if (!duck) ctx.fillRect(dino.x, dino.y + 8, 4, 8);
         obs.forEach((o) => {
           ctx.fillStyle = '#000';
+          const oy = o.fly ? GROUND - 70 : GROUND - o.h;
           if (o.h >= 36 && !o.fly) {
-            ctx.fillRect(o.x, GROUND - o.h, o.w, o.h);
-            ctx.fillRect(o.x - 2, GROUND - o.h - 4, 4, 4);
-          } else { ctx.fillRect(o.x, GROUND - o.h, o.w, o.h); }
+            ctx.fillRect(o.x, oy, o.w, o.h);
+            ctx.fillRect(o.x - 2, oy - 4, 4, 4);
+          } else { ctx.fillRect(o.x, oy, o.w, o.h); }
         });
         ctx.fillStyle = '#888'; ctx.font = '16px VT323'; ctx.textAlign = 'left';
         ctx.fillText('SCORE ' + score, W - 120, 8);

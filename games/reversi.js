@@ -75,8 +75,9 @@ export default {
             if (getFlips(x, y, 2).length) moves.push([x, y]);
           if (moves.length) {
             const [ax, ay] = moves[rng.int(moves.length)];
+            const flips = getFlips(ax, ay, 2);
             board[ay][ax] = 2;
-            for (const [fx, fy] of getFlips(ax, ay, 2)) board[fy][fx] = 2;
+            for (const [fx, fy] of flips) board[fy][fx] = 2;
             api.emit('blip');
           }
           // 切换 + 跳过

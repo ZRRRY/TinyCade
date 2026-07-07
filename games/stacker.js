@@ -24,7 +24,7 @@ export default {
     function reset() {
       stack = [{ x: 130, y: H - 30, w: 100, h: 20 }];
       current = { x: 0, y: H - 50, w: 100, h: 20 };
-      dir = 1; speed = 4; score = 0;
+      dir = 1; speed = 4; score = 1;
       timeLeft = 60 * 60;
     }
     reset();

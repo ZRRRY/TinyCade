@@ -1,7 +1,7 @@
 /* ============================================================
    games/colorcode.js — 颜色密码（§5.2 样板衍生 · puzzle）
    - 原版 games-extra.js:3070 — Mastermind 风格
-   - 演示模式：BTN.a 自动猜（按 rng 随机颜色组合），BTN.b 提交。
+   - 控制：←→ 移动光标，↑↓ 切换颜色，A 提交猜测
    ============================================================ */
 
 export default {
@@ -11,18 +11,18 @@ export default {
     desc: '猜出隐藏的颜色密码',
     icon: '🎨',
     cat: 'puzzle',
-    controls: '点击底部选色 · 提交看反馈',
+    controls: '←→移动光标 · ↑↓切换颜色 · A提交猜测',
   },
   tickHz: 5,
 
   create(rng, api) {
     const COLORS = ['#ff0066', '#00ffff', '#ffff00', '#00ff66', '#ff8800', '#aa00ff'];
-    let secret, guesses, sel, attempts, over, win, tickFrame;
+    let secret, guesses, sel, attempts, over, win, tickFrame, cursor;
 
     function reset() {
       secret = [];
       for (let i = 0; i < 4; i++) secret.push(rng.int(COLORS.length));
-      guesses = []; sel = [0, 0, 0, 0]; attempts = 0; over = false; win = false; tickFrame = 0;
+      guesses = []; sel = [0, 0, 0, 0]; attempts = 0; over = false; win = false; tickFrame = 0; cursor = 0;
     }
     function feedback(g) {
       let correct = 0, misp = 0;
@@ -34,8 +34,8 @@ export default {
       }
       return { correct, misp };
     }
-    function autoGuess() {
-      const g = [rng.int(COLORS.length), rng.int(COLORS.length), rng.int(COLORS.length), rng.int(COLORS.length)];
+    function submitGuess() {
+      const g = [...sel];
       const f = feedback(g);
       guesses.push({ g, f });
       attempts++;
@@ -52,7 +52,11 @@ export default {
       update(input) {
         tickFrame++;
         if (over) return;
-        if (input.pressed.a) autoGuess();
+        if (input.pressed.left) cursor = (cursor + 3) % 4;
+        if (input.pressed.right) cursor = (cursor + 1) % 4;
+        if (input.pressed.up) sel[cursor] = (sel[cursor] + 1) % COLORS.length;
+        if (input.pressed.down) sel[cursor] = (sel[cursor] + COLORS.length - 1) % COLORS.length;
+        if (input.pressed.a) submitGuess();
       },
       render(ctx) {
         ctx.fillStyle = '#0a0014'; ctx.fillRect(0, 0, 400, 400);
@@ -75,6 +79,11 @@ export default {
         for (let i = 0; i < 4; i++) {
           ctx.fillStyle = COLORS[sel[i]];
           ctx.fillRect(20 + i * 50, 320, 40, 40);
+          if (i === cursor) {
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(20 + i * 50, 320, 40, 40);
+          }
         }
         // 色板
         COLORS.forEach((c, i) => {

@@ -34,7 +34,7 @@ export default {
     }
     function sow(start) {
       let pos = start;
-      const owner = pits[start] >= 7 ? 1 : 0;
+      const owner = start >= 7 ? 1 : 0;
       const skip = owner === 1 ? 6 : 13;
       const n = pits[start]; pits[start] = 0;
       for (let k = 0; k < n; k++) {

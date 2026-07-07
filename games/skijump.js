@@ -21,10 +21,11 @@ export default {
   create(rng, api) {
     const W = 480, H = 360;
     let phase, power, skier, vx, vy, dist, frame = 0;
+    let prevA = false;
 
     function reset() {
       phase = 'charge'; power = 0; skier = { x: 60, y: 250 };
-      vx = 0; vy = 0; dist = 0;
+      vx = 0; vy = 0; dist = 0; prevA = false;
     }
     function jump() {
       if (phase === 'charge') {
@@ -50,7 +51,7 @@ export default {
             // 边沿释放 (a 从 held 变为 false)
             if (prevA) jump();
           }
-          var prevA = input.held.a; // eslint-disable-line no-var
+          prevA = input.held.a;
         } else if (phase === 'fly') {
           if (input.held.left) vx -= 0.05;
           if (input.held.right) vx += 0.05;

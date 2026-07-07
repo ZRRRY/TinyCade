@@ -61,7 +61,7 @@ export default {
           ctx.fillStyle = i === 0 ? '#ffff00' : '#00ff00';
           ctx.fillRect(s.x * CELL, s.y * CELL, CELL, CELL);
         });
-        ctx.fillStyle = '#fff'; ctx.font = '14px VT323, monospace'; ctx.textAlign = 'left';
+        ctx.fillStyle = '#fff'; ctx.font = '14px VT323, monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
         ctx.fillText(`SCORE ${score}`, 4, 4);
       },
       serialize() { return { score, len: snake.length, head: snake[0], frame, over }; },

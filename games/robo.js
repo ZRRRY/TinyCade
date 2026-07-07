@@ -54,16 +54,17 @@ export default {
         enemies = enemies.filter((e) => e.y <= H);
 
         // 命中
-        bullets.forEach((b) => {
+        for (let bi = bullets.length - 1; bi >= 0; bi--) {
+          const b = bullets[bi];
           for (let i = enemies.length - 1; i >= 0; i--) {
             const e = enemies[i];
             if (e.alive && Math.abs(b.x - e.x) < 16 && Math.abs(b.y - e.y) < 16) {
               e.alive = false; score += 10; api.emit('hit');
-              bullets.splice(bullets.indexOf(b), 1);
+              bullets.splice(bi, 1);
               break;
             }
           }
-        });
+        }
         enemies = enemies.filter((e) => e.alive);
 
         // 撞机

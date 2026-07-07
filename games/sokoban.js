@@ -17,7 +17,7 @@ export default {
 
   create(rng, api) {
     const CELL = 40;
-    const MAP_STR = "##########\n# ..  X  #\n#  X SX  #\n#   .  X.#\n#  $     #\n#  $.    #\n##########";
+    const MAP_STR = "##########\n#  .  .  #\n#        #\n#  $  $  #\n#   S    #\n#        #\n##########";
     let map, player, score, total, over, win, tickFrame;
     function reset() {
       map = [];

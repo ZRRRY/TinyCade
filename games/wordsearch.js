@@ -21,11 +21,11 @@ export default {
   create(rng, api) {
     const N = 10, CELL = 40;
     const WORDS = ['CODE', 'PIXEL', 'GAME', 'ARCADE', 'NINJA', 'FUN'];
-    let grid, found, over, win, tickFrame;
+    let grid, found, over, win, tickFrame, placedWords;
 
     function reset() {
       grid = Array.from({ length: N }, () => Array(N).fill(''));
-      found = [];
+      found = []; placedWords = [];
       for (const w of WORDS) {
         let placed = false;
         for (let tries = 0; tries < 100 && !placed; tries++) {
@@ -45,7 +45,7 @@ export default {
             const cx = x + dir[0] * i, cy = y + dir[1] * i;
             grid[cy][cx] = w[i];
           }
-          placed = true;
+          placed = true; placedWords.push(w);
         }
       }
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++)
@@ -53,10 +53,9 @@ export default {
       over = false; win = false; tickFrame = 0;
     }
     function findRandomWord() {
-      const remain = WORDS.filter((w) => !found.includes(w));
+      const remain = placedWords.filter((w) => !found.includes(w));
       if (!remain.length) return null;
       const w = remain[rng.int(remain.length)];
-      // 反查网格（演示：直接记录）
       found.push(w);
       return w;
     }
@@ -72,8 +71,8 @@ export default {
         if (input.pressed.a) {
           const w = findRandomWord();
           if (w) {
-            api.emit('win');
-            if (found.length === WORDS.length) { win = true; over = true; api.emit('win'); }
+            api.emit('found');
+            if (found.length === placedWords.length) { win = true; over = true; api.emit('win'); }
           }
         }
       },

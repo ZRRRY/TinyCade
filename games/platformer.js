@@ -40,10 +40,11 @@ export default {
       events,
       get over() { return over; },
       update(input) {
+        if (over) return;
         // 移动
         player.vx = (input.held.right ? 3 : 0) - (input.held.left ? 3 : 0);
         // 跳跃：up/space 边沿
-        if (input.pressed.up && vy === 0) { vy = -10; api.emit('jump'); }
+        if ((input.pressed.up || input.pressed.space) && vy === 0) { vy = -10; api.emit('jump'); }
         vy += 0.5;
         player.x += player.vx;
         player.y += vy;
@@ -55,7 +56,7 @@ export default {
         // 平台碰撞（从上落到平台顶）
         platforms.forEach((p) => {
           if (player.x + player.w > p.x && player.x < p.x + p.w &&
-              player.y + player.h > p.y && player.y + player.h < p.y + p.h + 10 &&
+              player.y + player.h >= p.y && player.y + player.h < p.y + p.h + 10 &&
               vy >= 0) {
             player.y = p.y - player.h;
             vy = 0;
@@ -75,9 +76,10 @@ export default {
           e.x += e.vx;
           if (e.x < cam || e.x > cam + W) e.vx = -e.vx;
           if (Math.abs(e.x - player.x) < 16 && Math.abs(e.y - player.y) < 24) {
-            api.emit('hit'); over = true; return;
+            api.emit('hit'); over = true;
           }
         });
+        if (over) return;
 
         if (player.y > H) { api.emit('gameover'); over = true; }
       },

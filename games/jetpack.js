@@ -51,7 +51,7 @@ export default {
         let dead = false;
         walls.forEach((w) => {
           if (player.x + 12 > w.x && player.x < w.x + 30) {
-            if (player.y < w.top || player.y > w.top + w.gap) dead = true;
+            if (player.y - 8 < w.top || player.y + 8 > w.top + w.gap) dead = true;
           }
         });
         if (player.y < 0 || player.y > H) dead = true;
